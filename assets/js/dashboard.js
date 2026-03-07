@@ -202,10 +202,12 @@ const Dashboard = {
                         <div class="guinness-crown">${hasPhoto ? '👑' : '🏆'}</div>
                         <div class="guinness-category">${category.icon} ${category.label}</div>
                         <div class="guinness-profile ${hasPhoto ? 'guinness-profile-glow' : ''}">${profileImg}</div>
-                        <div class="guinness-name">${record.name}</div>
-                        <div class="guinness-team">${record.team_name || record.position || ''}</div>
-                        <div class="guinness-record">${record.record_formatted}</div>
-                        <div class="guinness-record-label">🏆 역대 최고 기록</div>
+                        <div class="guinness-card-content">
+                            <div class="guinness-name">${record.name}</div>
+                            <div class="guinness-team">${record.team_name || record.position || ''}</div>
+                            <div class="guinness-record">${record.record_formatted}</div>
+                            <div class="guinness-record-label">🏆 역대 최고 기록</div>
+                        </div>
                     </div>
                 `;
             } else {
@@ -215,9 +217,11 @@ const Dashboard = {
                         <div class="guinness-profile">
                             <span class="guinness-profile-placeholder">-</span>
                         </div>
-                        <div class="guinness-name">-</div>
-                        <div class="guinness-team">기록 없음</div>
-                        <div class="guinness-record">-</div>
+                        <div class="guinness-card-content">
+                            <div class="guinness-name">-</div>
+                            <div class="guinness-team">기록 없음</div>
+                            <div class="guinness-record">-</div>
+                        </div>
                     </div>
                 `;
             }
@@ -294,6 +298,53 @@ const Dashboard = {
         }
     },
 
+    // 이벤트/분기시상 모달 표시
+    async showContentModal(type, title) {
+        const result = await this.fetchAPI('/settings/modal.php');
+
+        if (!result.success) {
+            this.showToast('콘텐츠를 불러올 수 없습니다.', 'error');
+            return;
+        }
+
+        const content = type === 'event' ? result.data.event : result.data.award;
+        const displayContent = content || '등록된 내용이 없습니다.';
+
+        const html = `
+            <div class="modal-overlay active" id="content-modal">
+                <div class="modal" style="max-width: 600px;">
+                    <div class="modal-header">
+                        <h3 class="modal-title">${title}</h3>
+                        <button class="modal-close" onclick="Dashboard.closeContentModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="modal-text-content" style="white-space: pre-wrap;">${this.escapeHtml(displayContent)}</div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="Dashboard.closeContentModal()">닫기</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', html);
+    },
+
+    // 콘텐츠 모달 닫기
+    closeContentModal() {
+        const modal = document.getElementById('content-modal');
+        if (modal) {
+            modal.remove();
+        }
+    },
+
+    // HTML 이스케이프
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    },
+
     // 명예의 전당 로드
     async loadHallOfFame() {
         const quarterId = this.findQuarterId(this.currentYear, this.currentQuarter);
@@ -314,10 +365,12 @@ const Dashboard = {
         if (!container) return;
 
         const categories = {
-            early: { label: '조기가동왕', icon: '🚀' },
-            monthly: { label: '월납왕', icon: '💰' },
-            count: { label: '건수왕', icon: '📊' },
-            total: { label: '종합왕', icon: '👑' }
+            early: { label: '조기가동 MVP', icon: '🚀' },
+            monthly: { label: '월납 MVP', icon: '💰' },
+            count: { label: '건수 MVP', icon: '📊' },
+            event: { label: '이벤트 MVP', icon: '🎯' },
+            three_w: { label: '3W MVP', icon: '📅' },
+            total: { label: '종합 MVP', icon: '👑' }
         };
 
         let html = '';
@@ -330,18 +383,44 @@ const Dashboard = {
                     ? `<img src="/229/uploads/profiles/${fame.profile_image}" alt="${fame.name}">`
                     : `<span class="fame-profile-placeholder">👤</span>`;
 
-                const valueFormatted = key === 'count'
-                    ? `${fame.value}건`
-                    : `${this.formatNumber(fame.value)}원`;
+                let valueFormatted;
+                if (key === 'count') {
+                    valueFormatted = `${fame.value}건`;
+                } else if (key === 'event') {
+                    valueFormatted = `${this.formatNumber(fame.value, 1)}점`;
+                } else if (key === 'three_w') {
+                    valueFormatted = `${fame.value}주`;
+                } else if (key === 'total') {
+                    valueFormatted = `${this.formatNumber(fame.value, 1)}점`;
+                } else {
+                    valueFormatted = `${this.formatNumber(fame.value)}원`;
+                }
+
+                // 조기가동, 월납, 건수는 금액 먼저(크게) 점수 나중(작게) / 종합은 점수만
+                let scoreHtml = '';
+                if (key === 'total') {
+                    scoreHtml = `<div class="fame-score">${this.formatNumber(fame.score, 1)}점</div>`;
+                } else if (['early', 'monthly', 'count'].includes(key)) {
+                    scoreHtml = `
+                        <div class="fame-score">${valueFormatted}</div>
+                        <div class="fame-value">${this.formatNumber(fame.score, 1)}점</div>
+                    `;
+                } else {
+                    scoreHtml = `
+                        <div class="fame-score">${this.formatNumber(fame.score, 1)}점</div>
+                        <div class="fame-value">${valueFormatted}</div>
+                    `;
+                }
 
                 html += `
                     <div class="fame-card">
                         <div class="fame-category">${category.icon} ${category.label}</div>
                         <div class="fame-profile">${profileImg}</div>
-                        <div class="fame-name">${fame.name}</div>
-                        <div class="fame-team">${fame.team_name || fame.position || ''}</div>
-                        <div class="fame-score">${this.formatNumber(fame.score, 1)}점</div>
-                        <div class="fame-value">${valueFormatted}</div>
+                        <div class="fame-card-content">
+                            <div class="fame-name">${fame.name}</div>
+                            <div class="fame-team">${fame.team_name || fame.position || ''}</div>
+                            ${scoreHtml}
+                        </div>
                     </div>
                 `;
             } else {
@@ -351,9 +430,11 @@ const Dashboard = {
                         <div class="fame-profile">
                             <span class="fame-profile-placeholder">-</span>
                         </div>
-                        <div class="fame-name">-</div>
-                        <div class="fame-team">데이터 없음</div>
-                        <div class="fame-score">-</div>
+                        <div class="fame-card-content">
+                            <div class="fame-name">-</div>
+                            <div class="fame-team">데이터 없음</div>
+                            <div class="fame-score">-</div>
+                        </div>
                     </div>
                 `;
             }
@@ -423,7 +504,7 @@ const Dashboard = {
         if (rankings.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="9" class="empty-state">
+                    <td colspan="10" class="empty-state">
                         등록된 실적이 없습니다.
                     </td>
                 </tr>
@@ -453,8 +534,11 @@ const Dashboard = {
             // 3W 계산 (몇 주차인지)
             const threeWWeeks = rank.three_w_weeks || '-';
 
+            // 이벤트 점수
+            const eventScore = parseFloat(rank.event_score) || 0;
+
             // 모바일용 세부 정보
-            const detailsText = `월납 ${this.formatNumber(rank.monthly_score, 1)} · 조기 ${this.formatNumber(rank.early_score, 1)} · 건수 ${this.formatNumber(rank.count_score, 1)} · 3W ${this.formatNumber(rank.three_w_score, 1)}`;
+            const detailsText = `조기 ${this.formatNumber(rank.early_score, 1)} · 월납 ${this.formatNumber(rank.monthly_score, 1)} · 건수 ${this.formatNumber(rank.count_score, 1)} · 3W ${this.formatNumber(rank.three_w_score, 1)} · 성장 ${this.formatNumber(rank.growth_score, 1)} · 이벤트 ${this.formatNumber(eventScore, 1)}`;
 
             html += `
                 <tr class="${rankClass}" data-details="${detailsText}">
@@ -469,12 +553,12 @@ const Dashboard = {
                         </div>
                     </td>
                     <td class="score-cell-dual">
-                        <div class="score-value">${this.formatNumber(rank.monthly_cumulative)}</div>
-                        <div class="score-point">${this.formatNumber(rank.monthly_score, 1)}점</div>
-                    </td>
-                    <td class="score-cell-dual">
                         <div class="score-value">${this.formatNumber(rank.early_cumulative)}</div>
                         <div class="score-point">${this.formatNumber(rank.early_score, 1)}점</div>
+                    </td>
+                    <td class="score-cell-dual">
+                        <div class="score-value">${this.formatNumber(rank.monthly_cumulative)}</div>
+                        <div class="score-point">${this.formatNumber(rank.monthly_score, 1)}점</div>
                     </td>
                     <td class="score-cell-dual">
                         <div class="score-value">${rank.total_count}건</div>
@@ -487,6 +571,10 @@ const Dashboard = {
                     <td class="score-cell-dual ${growthClass}">
                         <div class="score-value">${this.formatNumber(rank.growth_rate, 1)}%</div>
                         <div class="score-point">${this.formatNumber(rank.growth_score, 1)}점</div>
+                    </td>
+                    <td class="score-cell-dual">
+                        <div class="score-value">${this.formatNumber(eventScore, 1)}</div>
+                        <div class="score-point">${this.formatNumber(eventScore, 1)}점</div>
                     </td>
                     <td class="score-cell-dual">
                         <div class="score-value">${rank.attendance_status || '-'}</div>
@@ -604,17 +692,22 @@ const Dashboard = {
             });
         }
 
-        // 정렬 버튼
-        document.querySelectorAll('[data-sort]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const orderBy = btn.dataset.sort;
-                this.loadRankings(orderBy);
-
-                // 활성화 표시
-                document.querySelectorAll('[data-sort]').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
+        // 점수확인 토글 버튼
+        const toggleScoresBtn = document.getElementById('btn-toggle-scores');
+        if (toggleScoresBtn) {
+            toggleScoresBtn.addEventListener('click', () => {
+                const isActive = toggleScoresBtn.classList.toggle('active');
+                // 데스크탑: score-point 표시/숨김
+                document.querySelectorAll('.score-point').forEach(el => {
+                    el.style.display = isActive ? 'block' : 'none';
+                });
+                // 모바일: 테이블에 클래스 추가/제거
+                const rankingTable = document.querySelector('.ranking-table');
+                if (rankingTable) {
+                    rankingTable.classList.toggle('show-scores', isActive);
+                }
             });
-        });
+        }
 
         // 기간 토글 버튼 (분기/월별)
         document.querySelectorAll('[data-period]').forEach(btn => {
@@ -671,6 +764,18 @@ const Dashboard = {
         const showAllRecordsBtn = document.getElementById('btn-show-all-records');
         if (showAllRecordsBtn) {
             showAllRecordsBtn.addEventListener('click', () => this.showAllRecords());
+        }
+
+        // 이벤트 확인 모달 버튼
+        const eventModalBtn = document.getElementById('btn-event-modal');
+        if (eventModalBtn) {
+            eventModalBtn.addEventListener('click', () => this.showContentModal('event', '이벤트 확인'));
+        }
+
+        // 분기시상 모달 버튼
+        const awardModalBtn = document.getElementById('btn-award-modal');
+        if (awardModalBtn) {
+            awardModalBtn.addEventListener('click', () => this.showContentModal('award', '분기시상'));
         }
 
         // 테마 토글 버튼

@@ -186,7 +186,7 @@
 
                     <div class="form-group">
                         <label class="form-label" for="agent-join-date">입사일</label>
-                        <input type="date" id="agent-join-date" class="form-control">
+                        <input type="text" id="agent-join-date" class="form-control date-input" placeholder="2024-02-03" maxlength="10">
                     </div>
 
                     <hr style="border-color: var(--border-color); margin: 1.5rem 0;">
@@ -239,11 +239,12 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" onclick="Admin.closeModal()">닫기</button>
+                <button type="button" class="btn btn-primary" id="btn-save-all-teams">모두 저장</button>
             </div>
         </div>
     </div>
 
-    <script src="/229/assets/js/admin.js?v=7"></script>
+    <script src="/229/assets/js/admin.js?v=14"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             Admin.checkAuth();

@@ -68,6 +68,7 @@ CREATE TABLE daily_performance (
     monthly_premium DECIMAL(15,2) DEFAULT 0 COMMENT '월납보험료',
     contract_count INT DEFAULT 0 COMMENT '계약건수',
     early_premium DECIMAL(15,2) DEFAULT 0 COMMENT '조기보험료',
+    event_score DECIMAL(10,2) DEFAULT 0 COMMENT '이벤트점수',
     memo TEXT NULL,
     created_by INT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -85,6 +86,7 @@ CREATE TABLE cumulative_performance (
     early_cumulative DECIMAL(15,2) DEFAULT 0 COMMENT '조기 누적',
     monthly_cumulative DECIMAL(15,2) DEFAULT 0 COMMENT '월납 누적',
     total_count INT DEFAULT 0 COMMENT '총 건수',
+    event_cumulative DECIMAL(10,2) DEFAULT 0 COMMENT '이벤트 누적',
     three_w_weeks INT DEFAULT 0 COMMENT '3W 주차',
     attendance_count INT DEFAULT 0 COMMENT '출근일수',
     early_score DECIMAL(10,2) DEFAULT 0 COMMENT '조기가동점',
@@ -93,6 +95,7 @@ CREATE TABLE cumulative_performance (
     three_w_score DECIMAL(10,2) DEFAULT 0 COMMENT '3W점',
     growth_score DECIMAL(10,2) DEFAULT 0 COMMENT '성장점',
     attendance_score DECIMAL(10,2) DEFAULT 0 COMMENT '근태점',
+    event_score DECIMAL(10,2) DEFAULT 0 COMMENT '이벤트점',
     total_score DECIMAL(10,2) DEFAULT 0 COMMENT '종합점수',
     last_calculated TIMESTAMP NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -152,7 +155,7 @@ INSERT INTO quarters (year, quarter, name, start_date, end_date, is_current) VAL
 -- 기본 설정값
 INSERT INTO settings (setting_key, setting_value, description) VALUES
 ('early_score_divisor', '10000', '조기가동점 나눔값'),
-('monthly_score_divisor', '30000', '월납점 나눔값'),
+('monthly_score_divisor', '10000', '월납점 나눔값'),
 ('three_w_10_score', '2.0', '3W 10주 이상 점수'),
 ('three_w_5_score', '0.5', '3W 5주 이상 점수'),
 ('three_w_2_score', '0.2', '3W 2주 이상 점수'),
@@ -160,7 +163,9 @@ INSERT INTO settings (setting_key, setting_value, description) VALUES
 ('attendance_full_score', '20', '만근 점수'),
 ('working_days_per_month', '22', '월 근무일수'),
 ('refresh_interval', '5000', '대시보드 새로고침 간격(ms)'),
-('current_quarter_id', '1', '현재 분기 ID');
+('current_quarter_id', '1', '현재 분기 ID'),
+('modal_event_content', '', '이벤트 확인 모달 내용'),
+('modal_award_content', '', '분기시상 모달 내용');
 
 -- 인덱스
 CREATE INDEX idx_daily_date ON daily_performance(performance_date);

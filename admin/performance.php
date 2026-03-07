@@ -77,10 +77,13 @@
                             class="form-control"
                             style="max-width: 200px;"
                         >
+                        <select id="filter-perf-team" class="form-control" style="max-width: 180px;">
+                            <option value="">전체 팀</option>
+                        </select>
                         <button class="btn btn-secondary" id="btn-filter">조회</button>
                         <button class="btn btn-secondary" id="btn-today">오늘</button>
                         <div style="margin-left: auto; font-size: 0.875rem; color: var(--text-muted);">
-                            <span style="color: var(--gold);">*</span> 7일까지 입력된 금액은 조기가동으로 자동 분류됩니다.
+                            <span style="color: var(--gold);">*</span> 1~7일 입력분은 조기가동으로 자동 분류됩니다.
                         </div>
                     </div>
                 </div>
@@ -124,16 +127,20 @@
                             <table class="ranking-table">
                                 <thead>
                                     <tr>
-                                        <th style="min-width: 150px; text-align: left;">설계사</th>
-                                        <th style="width: 140px;">조기가동</th>
+                                        <th style="min-width: 130px; text-align: left;">설계사</th>
                                         <th style="width: 140px;">월납보험료</th>
-                                        <th style="width: 100px;">건수</th>
-                                        <th style="width: 140px;">관리</th>
+                                        <th style="width: 70px;">건수</th>
+                                        <th style="width: 70px;">이벤트</th>
+                                        <th style="width: 100px;">월 누적</th>
+                                        <th style="width: 80px;">조기가동</th>
+                                        <th style="width: 60px;">총건수</th>
+                                        <th style="width: 50px;">3W</th>
+                                        <th style="width: 100px;">관리</th>
                                     </tr>
                                 </thead>
                                 <tbody id="performance-tbody">
                                     <tr>
-                                        <td colspan="5" class="empty-state">데이터를 불러오는 중...</td>
+                                        <td colspan="9" class="empty-state">데이터를 불러오는 중...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -165,6 +172,9 @@
                                 class="form-control"
                                 style="max-width: 200px;"
                             >
+                            <select id="filter-attendance-team" class="form-control" style="max-width: 180px;">
+                                <option value="">전체 지사</option>
+                            </select>
                             <button class="btn btn-secondary" id="btn-attendance-today">이번 달</button>
                             <button class="btn btn-primary" id="btn-save-all-attendance">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -261,12 +271,8 @@
                                 <input type="date" id="detail-add-date" class="form-control" style="width: 150px;">
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">
-                                <label class="form-label">조기가동</label>
-                                <input type="text" id="detail-add-early" class="form-control money-input" style="width: 120px;" placeholder="0">
-                            </div>
-                            <div class="form-group" style="margin-bottom: 0;">
                                 <label class="form-label">월납보험료</label>
-                                <input type="text" id="detail-add-monthly" class="form-control money-input" style="width: 120px;" placeholder="0">
+                                <input type="text" id="detail-add-monthly" class="form-control money-input" style="width: 140px;" placeholder="0">
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label class="form-label">건수</label>
@@ -275,7 +281,7 @@
                             <button class="btn btn-primary" id="btn-detail-add">추가</button>
                         </div>
                         <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted);">
-                            <span style="color: var(--gold);">*</span> 7일 이전 날짜는 조기가동으로 자동 분류됩니다.
+                            <span style="color: var(--gold);">*</span> 1~7일 입력분은 조기가동으로 자동 분류됩니다.
                         </div>
                     </div>
                 </div>
@@ -312,7 +318,7 @@
         </div>
     </div>
 
-    <script src="/229/assets/js/admin.js?v=9"></script>
+    <script src="/229/assets/js/admin.js?v=14"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             Admin.checkAuth();

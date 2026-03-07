@@ -31,10 +31,12 @@ if (!$quarterId) {
 
 // 각 부문별 1위 조회
 $categories = [
-    'early' => ['field' => 'early_score', 'label' => '조기가동왕', 'cumulative' => 'early_cumulative'],
-    'monthly' => ['field' => 'monthly_score', 'label' => '월납왕', 'cumulative' => 'monthly_cumulative'],
-    'count' => ['field' => 'count_score', 'label' => '건수왕', 'cumulative' => 'total_count'],
-    'total' => ['field' => 'total_score', 'label' => '종합왕', 'cumulative' => null]
+    'early' => ['field' => 'early_score', 'label' => '조기가동 MVP', 'cumulative' => 'early_cumulative'],
+    'monthly' => ['field' => 'monthly_score', 'label' => '월납 MVP', 'cumulative' => 'monthly_cumulative'],
+    'count' => ['field' => 'count_score', 'label' => '건수 MVP', 'cumulative' => 'total_count'],
+    'event' => ['field' => 'event_score', 'label' => '이벤트 MVP', 'cumulative' => 'event_cumulative'],
+    'three_w' => ['field' => 'three_w_score', 'label' => '3W MVP', 'cumulative' => 'three_w_weeks'],
+    'total' => ['field' => 'total_score', 'label' => '종합 MVP', 'cumulative' => null]
 ];
 
 $hallOfFame = [];

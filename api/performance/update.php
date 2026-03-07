@@ -44,14 +44,20 @@ if (!$existing) {
 // 업데이트할 데이터 준비
 $data = [];
 
+// 월납보험료가 변경되면 조기가동도 자동 계산
 if (isset($input['monthly_premium'])) {
-    $data['monthly_premium'] = (float) $input['monthly_premium'];
+    $monthlyPremium = (float) $input['monthly_premium'];
+    $data['monthly_premium'] = $monthlyPremium;
+
+    // 조기가동 자동 계산: 1~7일이면 월납보험료가 조기가동
+    $day = (int) date('d', strtotime($existing['performance_date']));
+    $data['early_premium'] = ($day >= 1 && $day <= 7) ? $monthlyPremium : 0;
 }
 if (isset($input['contract_count'])) {
     $data['contract_count'] = (int) $input['contract_count'];
 }
-if (isset($input['early_premium'])) {
-    $data['early_premium'] = (float) $input['early_premium'];
+if (isset($input['event_score'])) {
+    $data['event_score'] = (float) $input['event_score'];
 }
 if (isset($input['memo'])) {
     $data['memo'] = sanitizeInput($input['memo']);

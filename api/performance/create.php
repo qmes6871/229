@@ -72,13 +72,20 @@ if ($existing) {
 }
 
 // 데이터 준비
+$monthlyPremium = (float) ($input['monthly_premium'] ?? 0);
+
+// 조기가동 자동 계산: 1~7일이면 월납보험료가 조기가동
+$day = (int) date('d', strtotime($performanceDate));
+$earlyPremium = ($day >= 1 && $day <= 7) ? $monthlyPremium : 0;
+
 $data = [
     'agent_id' => $agentId,
     'quarter_id' => $quarterId,
     'performance_date' => $performanceDate,
-    'monthly_premium' => (float) ($input['monthly_premium'] ?? 0),
+    'monthly_premium' => $monthlyPremium,
     'contract_count' => (int) ($input['contract_count'] ?? 0),
-    'early_premium' => (float) ($input['early_premium'] ?? 0),
+    'early_premium' => $earlyPremium,
+    'event_score' => (float) ($input['event_score'] ?? 0),
     'memo' => sanitizeInput($input['memo'] ?? ''),
     'created_by' => $user['sub']
 ];

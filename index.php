@@ -6,7 +6,7 @@
     <title>299본부 성과관리 | 실시간 업적판</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/229/assets/css/app.css?v=16">
+    <link rel="stylesheet" href="/229/assets/css/app.css?v=22">
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 <body>
@@ -141,6 +141,10 @@
                         </svg>
                         이번 분기 부문별 1위
                     </h2>
+                    <div class="flex gap-2">
+                        <button class="btn btn-secondary btn-sm" id="btn-event-modal">이벤트 확인</button>
+                        <button class="btn btn-secondary btn-sm" id="btn-award-modal">분기시상</button>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="hall-of-fame" id="hall-of-fame">
@@ -180,12 +184,9 @@
                             <option value="11">11월</option>
                             <option value="12">12월</option>
                         </select>
-                        <div class="flex gap-1">
-                            <button class="btn btn-secondary btn-sm active" data-sort="total_score">종합</button>
-                            <button class="btn btn-secondary btn-sm" data-sort="early_score">조기</button>
-                            <button class="btn btn-secondary btn-sm" data-sort="monthly_score">월납</button>
-                            <button class="btn btn-secondary btn-sm" data-sort="count_score">건수</button>
-                        </div>
+                        <button class="btn btn-secondary btn-sm" id="btn-toggle-scores">
+                            점수확인
+                        </button>
                     </div>
                 </div>
                 <div class="card-body">
@@ -195,18 +196,19 @@
                                 <tr>
                                     <th style="width: 50px;">순위</th>
                                     <th style="min-width: 130px; text-align: left;">설계사</th>
-                                    <th>월납보험료</th>
                                     <th>조기가동</th>
+                                    <th>월납보험료</th>
                                     <th>건수</th>
                                     <th>3W</th>
                                     <th>성장률</th>
+                                    <th>이벤트</th>
                                     <th>근태</th>
                                     <th>최종합계</th>
                                 </tr>
                             </thead>
                             <tbody id="ranking-tbody">
                                 <tr>
-                                    <td colspan="9" class="empty-state">데이터를 불러오는 중...</td>
+                                    <td colspan="10" class="empty-state">데이터를 불러오는 중...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -238,6 +240,6 @@
         <p>© 2026 프라임에셋 299본부. All rights reserved.</p>
     </footer>
 
-    <script src="/229/assets/js/dashboard.js?v=17"></script>
+    <script src="/229/assets/js/dashboard.js?v=26"></script>
 </body>
 </html>

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>관리자 대시보드 | 299본부</title>
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/229/assets/css/app.css?v=8">
+    <link rel="stylesheet" href="/229/assets/css/app.css?v=17">
 </head>
 <body>
     <div class="admin-layout">
@@ -121,6 +121,27 @@
                 </div>
             </div>
 
+            <!-- 모달 콘텐츠 관리 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title">업적판 모달 관리</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <div class="form-group">
+                            <label class="form-label">이벤트 확인</label>
+                            <textarea id="modal-event-content" class="form-control" rows="6" placeholder="이벤트 내용을 입력하세요..."></textarea>
+                            <button class="btn btn-primary btn-sm mt-2" onclick="Admin.saveModalContent('event')">저장</button>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">분기시상</label>
+                            <textarea id="modal-award-content" class="form-control" rows="6" placeholder="분기시상 내용을 입력하세요..."></textarea>
+                            <button class="btn btn-primary btn-sm mt-2" onclick="Admin.saveModalContent('award')">저장</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- 최근 실적 -->
             <div class="card">
                 <div class="card-header">
@@ -151,11 +172,12 @@
         </main>
     </div>
 
-    <script src="/229/assets/js/admin.js"></script>
+    <script src="/229/assets/js/admin.js?v=15"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             Admin.checkAuth();
             Admin.loadDashboard();
+            Admin.loadModalContent();
 
             // 현재 날짜 표시
             const dateEl = document.getElementById('current-date');

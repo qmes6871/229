@@ -73,7 +73,7 @@ $sql .= " ORDER BY dp.performance_date DESC, a.name ASC";
 
 $performances = $db->fetchAll($sql, $params);
 
-// 합계 계산
+// 합계 계산 (선택된 날짜 기준)
 $totals = [
     'monthly_premium' => 0,
     'contract_count' => 0,
@@ -86,8 +86,60 @@ foreach ($performances as $p) {
     $totals['early_premium'] += (float) $p['early_premium'];
 }
 
+// 월별 합계 계산 (해당 월 전체)
+$monthlyTotals = null;
+$agentMonthlyStats = [];
+
+if ($date) {
+    $yearMonth = substr($date, 0, 7); // YYYY-MM
+    $monthStart = $yearMonth . '-01';
+    $monthEnd = date('Y-m-t', strtotime($monthStart));
+
+    $monthlyTotals = $db->fetchOne("
+        SELECT
+            COALESCE(SUM(early_premium), 0) as early_premium,
+            COALESCE(SUM(monthly_premium), 0) as monthly_premium,
+            COALESCE(SUM(contract_count), 0) as contract_count
+        FROM daily_performance
+        WHERE quarter_id = ? AND performance_date BETWEEN ? AND ?
+    ", [$quarterId, $monthStart, $monthEnd]);
+
+    // 설계사별 월간 누적 통계
+    $agentStats = $db->fetchAll("
+        SELECT
+            dp.agent_id,
+            COALESCE(SUM(dp.early_premium), 0) as monthly_early,
+            COALESCE(SUM(dp.monthly_premium), 0) as monthly_total,
+            COALESCE(SUM(dp.contract_count), 0) as monthly_count
+        FROM daily_performance dp
+        WHERE dp.quarter_id = ? AND dp.performance_date BETWEEN ? AND ?
+        GROUP BY dp.agent_id
+    ", [$quarterId, $monthStart, $monthEnd]);
+
+    foreach ($agentStats as $stat) {
+        $agentMonthlyStats[$stat['agent_id']] = $stat;
+    }
+}
+
+// 설계사별 3W 주차 (분기 기준)
+$agentThreeW = [];
+if ($quarterId) {
+    $threeWStats = $db->fetchAll("
+        SELECT agent_id, three_w_weeks
+        FROM cumulative_performance
+        WHERE quarter_id = ?
+    ", [$quarterId]);
+
+    foreach ($threeWStats as $stat) {
+        $agentThreeW[$stat['agent_id']] = $stat['three_w_weeks'];
+    }
+}
+
 successResponse([
     'performances' => $performances,
     'totals' => $totals,
+    'monthly_totals' => $monthlyTotals,
+    'agent_monthly_stats' => $agentMonthlyStats,
+    'agent_three_w' => $agentThreeW,
     'count' => count($performances)
 ]);
