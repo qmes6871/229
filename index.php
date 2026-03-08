@@ -165,12 +165,10 @@
                         </svg>
                         <span id="ranking-title">실시간 순위 (분기)</span>
                     </h2>
-                    <div class="flex gap-2 flex-wrap">
-                        <div class="flex gap-1">
-                            <button class="btn btn-primary btn-sm active" data-period="quarter">분기</button>
-                            <button class="btn btn-secondary btn-sm" data-period="month">월별</button>
-                        </div>
-                        <select id="month-select" class="form-control" style="max-width: 100px; display: none;">
+                    <div class="flex gap-1" style="align-items: center;">
+                        <button class="btn btn-secondary btn-sm" data-period="quarter">분기</button>
+                        <button class="btn btn-primary btn-sm active" data-period="month">월별</button>
+                        <select id="month-select" class="form-control" style="max-width: 80px;">
                             <option value="1">1월</option>
                             <option value="2">2월</option>
                             <option value="3">3월</option>
@@ -184,9 +182,7 @@
                             <option value="11">11월</option>
                             <option value="12">12월</option>
                         </select>
-                        <button class="btn btn-secondary btn-sm" id="btn-toggle-scores">
-                            점수확인
-                        </button>
+                        <button class="btn btn-secondary btn-sm" id="btn-toggle-scores">점수확인</button>
                     </div>
                 </div>
                 <div class="card-body">

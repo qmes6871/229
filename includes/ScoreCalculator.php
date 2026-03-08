@@ -64,9 +64,10 @@ class ScoreCalculator {
         return 0;
     }
 
-    // 3W 주차 자동 계산 (월~일 기준, 주당 3건 이상이면 1주 달성)
-    public function calculateThreeWWeeks(int $agentId, int $quarterId): int {
-        // 주차별 건수 합계 계산 (YEARWEEK: 월요일 시작 기준 mode 1)
+    // 3W 주차 자동 계산 (월~일 기준, 주당 3건 이상이면 1주 달성, 연속 달성만 카운트)
+    // 반환: ['current' => 현재 연속 주차, 'best' => 역대 최대 연속 주차(역사)]
+    public function calculateThreeWWeeksData(int $agentId, int $quarterId): array {
+        // 분기 내 모든 주차별 건수 합계 계산 (YEARWEEK: 월요일 시작 기준 mode 1)
         $weeklyContracts = $this->db->fetchAll("
             SELECT
                 YEARWEEK(performance_date, 1) as year_week,
@@ -74,10 +75,81 @@ class ScoreCalculator {
             FROM daily_performance
             WHERE agent_id = ? AND quarter_id = ?
             GROUP BY YEARWEEK(performance_date, 1)
-            HAVING SUM(contract_count) >= 3
+            ORDER BY year_week ASC
         ", [$agentId, $quarterId]);
 
-        return count($weeklyContracts);
+        if (empty($weeklyContracts)) {
+            return ['current' => 0, 'best' => 0];
+        }
+
+        // 분기 시작일과 현재 날짜 기준으로 모든 주차 목록 생성
+        $quarter = $this->db->fetchOne("SELECT start_date, end_date FROM quarters WHERE id = ?", [$quarterId]);
+        if (!$quarter) {
+            return ['current' => 0, 'best' => 0];
+        }
+
+        $startDate = new DateTime($quarter['start_date']);
+        $endDate = new DateTime($quarter['end_date']);
+        $today = new DateTime();
+
+        // 분기 종료일과 오늘 중 더 이른 날짜까지만 체크
+        $checkEndDate = ($today < $endDate) ? $today : $endDate;
+
+        // 달성한 주차들의 year_week를 배열로 변환
+        $achievedWeeks = [];
+        foreach ($weeklyContracts as $row) {
+            if ((int)$row['weekly_count'] >= 3) {
+                $achievedWeeks[] = $row['year_week'];
+            }
+        }
+
+        // 분기 시작부터 현재까지의 모든 주차 목록 생성
+        $allWeeks = [];
+        $current = clone $startDate;
+        while ($current <= $checkEndDate) {
+            $yearWeek = $current->format('oW'); // ISO 8601 연도 + 주차
+            // MySQL YEARWEEK(date, 1)과 동일한 형식으로 변환
+            $yearWeek = (int)($current->format('o') . $current->format('W'));
+            if (!in_array($yearWeek, $allWeeks)) {
+                $allWeeks[] = $yearWeek;
+            }
+            $current->modify('+1 day');
+        }
+        sort($allWeeks);
+
+        // 연속 달성 계산
+        $currentStreak = 0;
+        $bestStreak = 0;
+        $tempStreak = 0;
+
+        foreach ($allWeeks as $week) {
+            if (in_array($week, $achievedWeeks)) {
+                $tempStreak++;
+                if ($tempStreak > $bestStreak) {
+                    $bestStreak = $tempStreak;
+                }
+            } else {
+                $tempStreak = 0;
+            }
+        }
+
+        // 현재 연속 = 가장 마지막 주차부터 역순으로 연속된 달성 수
+        $reversedWeeks = array_reverse($allWeeks);
+        foreach ($reversedWeeks as $week) {
+            if (in_array($week, $achievedWeeks)) {
+                $currentStreak++;
+            } else {
+                break;
+            }
+        }
+
+        return ['current' => $currentStreak, 'best' => $bestStreak];
+    }
+
+    // 기존 호환성을 위한 래퍼 함수 (현재 연속 주차 반환)
+    public function calculateThreeWWeeks(int $agentId, int $quarterId): int {
+        $data = $this->calculateThreeWWeeksData($agentId, $quarterId);
+        return $data['current'];
     }
 
     // 성장점 계산
@@ -170,8 +242,10 @@ class ScoreCalculator {
             WHERE agent_id = ? AND quarter_id = ?
         ", [$agentId, $quarterId]);
 
-        // 3W 주차 자동 계산 (월~일 기준, 주당 3건 이상이면 1주 달성)
-        $threeWWeeks = $this->calculateThreeWWeeks($agentId, $quarterId);
+        // 3W 주차 자동 계산 (월~일 기준, 주당 3건 이상 연속 달성)
+        $threeWData = $this->calculateThreeWWeeksData($agentId, $quarterId);
+        $threeWWeeks = $threeWData['current']; // 현재 연속 주차
+        $threeWBest = $threeWData['best'];     // 역대 최대 연속 주차(역사)
         $attendanceCount = $cumulative['attendance_count'] ?? 0;
 
         // 출근일수 계산 (attendance 테이블에서)
@@ -210,6 +284,7 @@ class ScoreCalculator {
             'total_count' => $dailySum['total_count'],
             'event_cumulative' => $dailySum['event_cumulative'],
             'three_w_weeks' => $threeWWeeks,
+            'three_w_best' => $threeWBest,
             'attendance_count' => $attendanceCount,
             'early_score' => $earlyScore,
             'monthly_score' => $monthlyScore,

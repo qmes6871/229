@@ -6,23 +6,36 @@ const Dashboard = {
     refreshInterval: 5000,
     refreshTimer: null,
     apiBase: '/229/api',
-    currentPeriod: 'quarter',
+    currentPeriod: 'month',
     currentMonth: new Date().getMonth() + 1,
     currentSort: 'total_score',
     currentYear: new Date().getFullYear(),
     currentQuarter: Math.ceil((new Date().getMonth() + 1) / 3),
     currentQuarterId: null,
     quarters: [],
+    showScores: false,
 
     init() {
         // 테마 초기화
         this.initTheme();
 
-        // 현재 월 기본 선택
+        // 현재 월 기본 선택 및 월별 탭 활성화
         const monthSelect = document.getElementById('month-select');
         if (monthSelect) {
             monthSelect.value = this.currentMonth;
+            monthSelect.style.display = 'block'; // 월별이 기본이므로 표시
         }
+
+        // 월별 탭 버튼 활성화
+        document.querySelectorAll('[data-period]').forEach(btn => {
+            if (btn.dataset.period === 'month') {
+                btn.classList.remove('btn-secondary');
+                btn.classList.add('active', 'btn-primary');
+            } else {
+                btn.classList.remove('active', 'btn-primary');
+                btn.classList.add('btn-secondary');
+            }
+        });
 
         this.loadQuarters().then(() => {
             this.loadQuarterInfo();
@@ -311,14 +324,14 @@ const Dashboard = {
         const displayContent = content || '등록된 내용이 없습니다.';
 
         const html = `
-            <div class="modal-overlay active" id="content-modal">
-                <div class="modal" style="max-width: 600px;">
+            <div class="modal-overlay active" id="content-modal" onclick="Dashboard.closeContentModal()">
+                <div class="modal" style="max-width: 600px;" onclick="event.stopPropagation()">
                     <div class="modal-header">
                         <h3 class="modal-title">${title}</h3>
                         <button class="modal-close" onclick="Dashboard.closeContentModal()">&times;</button>
                     </div>
                     <div class="modal-body">
-                        <div class="modal-text-content" style="white-space: pre-wrap;">${this.escapeHtml(displayContent)}</div>
+                        <div class="modal-text-content" style="white-space: pre-wrap;">${this.linkify(displayContent)}</div>
                     </div>
                     <div class="modal-footer">
                         <button class="btn btn-secondary" onclick="Dashboard.closeContentModal()">닫기</button>
@@ -343,6 +356,15 @@ const Dashboard = {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    },
+
+    // 텍스트 내 URL을 클릭 가능한 링크로 변환
+    linkify(text) {
+        // 먼저 HTML 이스케이프
+        const escaped = this.escapeHtml(text);
+        // URL 패턴을 찾아서 링크로 변환
+        const urlPattern = /(https?:\/\/[^\s<]+)/g;
+        return escaped.replace(urlPattern, '<a href="$1" target="_blank" rel="noopener noreferrer" style="color: var(--primary); text-decoration: underline;">$1</a>');
     },
 
     // 명예의 전당 로드
@@ -586,6 +608,20 @@ const Dashboard = {
         });
 
         tbody.innerHTML = html;
+
+        // 점수확인 상태 유지
+        this.applyScoreVisibility();
+    },
+
+    // 점수확인 상태 적용
+    applyScoreVisibility() {
+        document.querySelectorAll('.score-point').forEach(el => {
+            el.style.display = this.showScores ? 'block' : 'none';
+        });
+        const rankingTable = document.querySelector('.ranking-table');
+        if (rankingTable) {
+            rankingTable.classList.toggle('show-scores', this.showScores);
+        }
     },
 
     // 통계 로드
@@ -696,16 +732,9 @@ const Dashboard = {
         const toggleScoresBtn = document.getElementById('btn-toggle-scores');
         if (toggleScoresBtn) {
             toggleScoresBtn.addEventListener('click', () => {
-                const isActive = toggleScoresBtn.classList.toggle('active');
-                // 데스크탑: score-point 표시/숨김
-                document.querySelectorAll('.score-point').forEach(el => {
-                    el.style.display = isActive ? 'block' : 'none';
-                });
-                // 모바일: 테이블에 클래스 추가/제거
-                const rankingTable = document.querySelector('.ranking-table');
-                if (rankingTable) {
-                    rankingTable.classList.toggle('show-scores', isActive);
-                }
+                this.showScores = !this.showScores;
+                toggleScoresBtn.classList.toggle('active', this.showScores);
+                this.applyScoreVisibility();
             });
         }
 
