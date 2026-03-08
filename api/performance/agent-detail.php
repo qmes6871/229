@@ -90,6 +90,18 @@ $totals = $db->fetchOne("
     WHERE agent_id = ? AND quarter_id = ?
 ", [$agentId, $quarterId]);
 
+// 이번 달 합계
+$currentMonth = date('Y-m');
+$monthlyTotals = $db->fetchOne("
+    SELECT
+        COALESCE(SUM(early_premium), 0) as total_early,
+        COALESCE(SUM(monthly_premium), 0) as total_monthly,
+        COALESCE(SUM(contract_count), 0) as total_count
+    FROM daily_performance
+    WHERE agent_id = ? AND quarter_id = ?
+    AND DATE_FORMAT(performance_date, '%Y-%m') = ?
+", [$agentId, $quarterId, $currentMonth]);
+
 successResponse([
     'agent' => $agent,
     'quarter' => $quarter,
@@ -100,5 +112,13 @@ successResponse([
         'monthly' => (float) $totals['total_monthly'],
         'monthly_formatted' => number_format((float) $totals['total_monthly']),
         'count' => (int) $totals['total_count']
+    ],
+    'monthly_totals' => [
+        'month' => $currentMonth,
+        'early' => (float) $monthlyTotals['total_early'],
+        'early_formatted' => number_format((float) $monthlyTotals['total_early']),
+        'monthly' => (float) $monthlyTotals['total_monthly'],
+        'monthly_formatted' => number_format((float) $monthlyTotals['total_monthly']),
+        'count' => (int) $monthlyTotals['total_count']
     ]
 ]);

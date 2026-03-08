@@ -41,6 +41,14 @@ $categories = [
 
 $hallOfFame = [];
 
+// 랜덤 설계사용 - 활성 설계사 목록
+$allAgents = $db->fetchAll("
+    SELECT a.id, a.name, a.profile_image, a.position, t.name as team_name
+    FROM agents a
+    LEFT JOIN teams t ON a.team_id = t.id
+    WHERE a.is_active = 1
+");
+
 foreach ($categories as $key => $category) {
     $sql = "
         SELECT
@@ -59,7 +67,25 @@ foreach ($categories as $key => $category) {
 
     $top = $db->fetchOne($sql, [$quarterId]);
 
-    if ($top) {
+    // 점수가 0이거나 데이터가 없으면 랜덤 설계사 선택
+    if (!$top || (float) $top[$category['field']] <= 0) {
+        // 랜덤 설계사 선택
+        if (!empty($allAgents)) {
+            $randomAgent = $allAgents[array_rand($allAgents)];
+            $hallOfFame[$key] = [
+                'category' => $key,
+                'label' => $category['label'],
+                'agent_id' => $randomAgent['id'],
+                'name' => $randomAgent['name'],
+                'profile_image' => $randomAgent['profile_image'],
+                'position' => $randomAgent['position'],
+                'team_name' => $randomAgent['team_name'],
+                'score' => 0,
+                'value' => 0,
+                'is_pending' => true  // 달성예정 표시
+            ];
+        }
+    } else {
         $hallOfFame[$key] = [
             'category' => $key,
             'label' => $category['label'],
@@ -69,7 +95,8 @@ foreach ($categories as $key => $category) {
             'position' => $top['position'],
             'team_name' => $top['team_name'],
             'score' => (float) $top[$category['field']],
-            'value' => $category['cumulative'] ? (float) $top[$category['cumulative']] : (float) $top['total_score']
+            'value' => $category['cumulative'] ? (float) $top[$category['cumulative']] : (float) $top['total_score'],
+            'is_pending' => false
         ];
     }
 }

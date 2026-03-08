@@ -25,7 +25,8 @@ $quarters = $db->fetchAll("
         quarter,
         start_date,
         end_date,
-        is_current
+        is_current,
+        target_score
     FROM quarters
     ORDER BY year DESC, quarter DESC
 ");

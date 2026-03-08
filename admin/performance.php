@@ -243,18 +243,18 @@
                     </div>
                 </div>
 
-                <!-- 분기 합계 -->
+                <!-- 이번 달 합계 -->
                 <div class="stats-grid mb-4" style="grid-template-columns: repeat(3, 1fr);">
                     <div class="stat-card">
-                        <div class="stat-label">조기가동 합계</div>
+                        <div class="stat-label">이번 달 조기가동</div>
                         <div class="stat-value gold" id="detail-total-early">0</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">월납보험료 합계</div>
+                        <div class="stat-label">이번 달 월납보험료</div>
                         <div class="stat-value gold" id="detail-total-monthly">0</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">계약건수 합계</div>
+                        <div class="stat-label">이번 달 건수</div>
                         <div class="stat-value" id="detail-total-count">0</div>
                     </div>
                 </div>

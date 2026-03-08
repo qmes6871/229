@@ -268,6 +268,70 @@ const Admin = {
         if (performances.success) {
             this.renderRecentPerformance(performances.data.performances);
         }
+
+        // 분기 목록 로드
+        this.loadQuarters();
+    },
+
+    // 분기 목록 로드
+    async loadQuarters() {
+        const result = await this.fetchAPI('/dashboard/quarters.php');
+        if (result.success && result.data.quarters) {
+            const select = document.getElementById('quarter-select');
+            if (select) {
+                select.innerHTML = result.data.quarters.map(q =>
+                    `<option value="${q.id}" data-target="${q.target_score || 200}">${q.year}년 ${q.quarter}분기</option>`
+                ).join('');
+
+                // 현재 분기 선택
+                if (result.data.current) {
+                    select.value = result.data.current.id;
+                }
+
+                // 목표 점수 표시
+                this.updateTargetScoreDisplay();
+
+                // 분기 변경 시 목표 점수 업데이트
+                select.addEventListener('change', () => this.updateTargetScoreDisplay());
+            }
+        }
+    },
+
+    // 목표 점수 표시 업데이트
+    updateTargetScoreDisplay() {
+        const select = document.getElementById('quarter-select');
+        const targetInput = document.getElementById('target-score');
+        if (select && targetInput) {
+            const selectedOption = select.options[select.selectedIndex];
+            targetInput.value = selectedOption?.dataset.target || 200;
+        }
+    },
+
+    // 목표 점수 저장
+    async saveTargetScore() {
+        const quarterId = document.getElementById('quarter-select')?.value;
+        const targetScore = document.getElementById('target-score')?.value;
+
+        if (!quarterId) {
+            this.showToast('분기를 선택해주세요.', 'error');
+            return;
+        }
+
+        const result = await this.fetchAPI('/settings/target-score.php', {
+            method: 'POST',
+            body: JSON.stringify({
+                quarter_id: parseInt(quarterId),
+                target_score: parseInt(targetScore) || 200
+            })
+        });
+
+        if (result.success) {
+            this.showToast('목표 점수가 저장되었습니다.', 'success');
+            // 분기 목록 다시 로드
+            this.loadQuarters();
+        } else {
+            this.showToast(result.message || '저장에 실패했습니다.', 'error');
+        }
     },
 
     renderRecentPerformance(performances) {
@@ -1039,7 +1103,7 @@ const Admin = {
         const result = await this.fetchAPI(`/performance/agent-detail.php?agent_id=${agentId}`);
 
         if (result.success) {
-            const { agent, quarter, performances, totals } = result.data;
+            const { agent, quarter, performances, totals, monthly_totals } = result.data;
 
             // 설계사 정보 표시
             document.getElementById('detail-agent-name').textContent = agent.name;
@@ -1056,10 +1120,10 @@ const Admin = {
                 profileEl.innerHTML = '<span class="agent-profile-placeholder">👤</span>';
             }
 
-            // 합계 표시
-            document.getElementById('detail-total-early').textContent = totals.early_formatted;
-            document.getElementById('detail-total-monthly').textContent = totals.monthly_formatted;
-            document.getElementById('detail-total-count').textContent = totals.count;
+            // 합계 표시 (이번 달 기준)
+            document.getElementById('detail-total-early').textContent = monthly_totals.early_formatted;
+            document.getElementById('detail-total-monthly').textContent = monthly_totals.monthly_formatted;
+            document.getElementById('detail-total-count').textContent = monthly_totals.count;
 
             // 실적 내역 표시
             this.renderDetailPerformances(performances);
@@ -1084,15 +1148,15 @@ const Admin = {
                 : '<span class="badge">일반</span>';
 
             html += `
-                <tr data-perf-id="${p.id}">
+                <tr data-perf-id="${p.id}" data-monthly="${p.monthly_premium}" data-count="${p.contract_count}">
                     <td style="text-align: left;">${p.performance_date}</td>
                     <td>${dayBadge}</td>
-                    <td>${p.early_premium_formatted}</td>
-                    <td>${p.monthly_premium_formatted}</td>
-                    <td>${p.contract_count}</td>
-                    <td>
+                    <td class="cell-early">${p.early_premium_formatted}</td>
+                    <td class="cell-monthly">${p.monthly_premium_formatted}</td>
+                    <td class="cell-count">${p.contract_count}</td>
+                    <td class="cell-actions">
                         <div style="display: flex; gap: 4px; justify-content: center;">
-                            <button class="btn btn-secondary btn-sm" onclick="Admin.editDetailPerformance(${p.id})">수정</button>
+                            <button class="btn btn-secondary btn-sm btn-edit" onclick="Admin.startEditDetailPerformance(${p.id})">수정</button>
                             <button class="btn btn-secondary btn-sm" onclick="Admin.deleteDetailPerformance(${p.id})" style="color: var(--error);">삭제</button>
                         </div>
                     </td>
@@ -1144,27 +1208,58 @@ const Admin = {
         }
     },
 
-    async editDetailPerformance(perfId) {
-        // 간단한 프롬프트로 수정 (추후 인라인 편집으로 개선 가능)
+    // 인라인 편집 시작
+    startEditDetailPerformance(perfId) {
         const row = document.querySelector(`tr[data-perf-id="${perfId}"]`);
         if (!row) return;
 
-        const cells = row.querySelectorAll('td');
-        const currentMonthly = cells[3].textContent.replace(/,/g, '');
-        const currentCount = cells[4].textContent;
+        // 이미 편집 중인지 확인
+        if (row.classList.contains('editing')) return;
+        row.classList.add('editing');
 
-        const newMonthly = prompt('월납보험료:', currentMonthly);
-        if (newMonthly === null) return;
+        const currentMonthly = row.dataset.monthly || 0;
+        const currentCount = row.dataset.count || 0;
 
-        const newCount = prompt('건수:', currentCount);
-        if (newCount === null) return;
+        const cellMonthly = row.querySelector('.cell-monthly');
+        const cellCount = row.querySelector('.cell-count');
+        const cellActions = row.querySelector('.cell-actions');
+
+        // 입력 필드로 변경
+        cellMonthly.innerHTML = `<input type="text" class="form-control money-input edit-monthly" value="${this.formatNumber(currentMonthly)}" style="width: 100px; text-align: right;">`;
+        cellCount.innerHTML = `<input type="number" class="form-control edit-count" value="${currentCount}" min="0" style="width: 60px; text-align: right;">`;
+
+        // 버튼 변경
+        cellActions.innerHTML = `
+            <div style="display: flex; gap: 4px; justify-content: center;">
+                <button class="btn btn-primary btn-sm" onclick="Admin.saveEditDetailPerformance(${perfId})">저장</button>
+                <button class="btn btn-secondary btn-sm" onclick="Admin.cancelEditDetailPerformance(${perfId})">취소</button>
+            </div>
+        `;
+
+        // 금액 입력 필드 바인딩
+        this.bindMoneyInputs();
+
+        // 첫 번째 입력 필드에 포커스
+        const firstInput = cellMonthly.querySelector('input');
+        if (firstInput) {
+            firstInput.focus();
+            firstInput.select();
+        }
+    },
+
+    // 인라인 편집 저장
+    async saveEditDetailPerformance(perfId) {
+        const row = document.querySelector(`tr[data-perf-id="${perfId}"]`);
+        if (!row) return;
+
+        const monthlyInput = row.querySelector('.edit-monthly');
+        const countInput = row.querySelector('.edit-count');
 
         const data = {
             id: perfId,
-            monthly_premium: parseInt(newMonthly) || 0,
-            contract_count: parseInt(newCount) || 0
+            monthly_premium: this.parseNumber(monthlyInput?.value),
+            contract_count: parseInt(countInput?.value) || 0
         };
-        // 조기가동은 서버에서 날짜 기반으로 자동 계산됨
 
         const result = await this.fetchAPI('/performance/update.php', {
             method: 'PUT',
@@ -1178,6 +1273,12 @@ const Admin = {
         } else {
             this.showToast(result.message, 'error');
         }
+    },
+
+    // 인라인 편집 취소
+    cancelEditDetailPerformance(perfId) {
+        // 데이터 새로고침으로 원래 상태 복원
+        this.loadAgentDetail(this.currentDetailAgentId);
     },
 
     async deleteDetailPerformance(perfId) {

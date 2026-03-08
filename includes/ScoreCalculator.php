@@ -3,12 +3,13 @@
  * 299본부 성과관리 CRM - 점수 계산 클래스
  *
  * 점수 계산 공식:
- * - 조기가동점: 조기보험료 ÷ 10,000 (1만원당 1점)
- * - 월납점: 월납보험료 ÷ 10,000 (1만원당 1점)
- * - 건수점: 월 건수 (그대로)
- * - 3W점: 10주↑: 2.0 / 5주↑: 0.5 / 2주↑: 0.2
- * - 성장점: 전월비 성장률 × 30%
- * - 근태점: 만근 시 20점
+ * - 조기가동점: 1만원당 0.5점 (월납에 추가점수)
+ * - 월납점: 1만원당 0.5점
+ * - 건수점: 1건당 0.5점
+ * - 3W점: 1주당 0.5점
+ * - 성장점: 직전분기 평균의 10% 성장당 1점
+ * - 이벤트점: 1건당 1점
+ * - 근태점: 출근 5점, 만근 10점
  * - 종합점수: 모든 점수 합산
  */
 
@@ -35,33 +36,50 @@ class ScoreCalculator {
         return $this->settings[$key] ?? $default;
     }
 
-    // 조기가동점 계산
+    // 조기가동점 계산 (1만원당 0.5점)
     public function calculateEarlyScore(float $earlyPremium): float {
-        $divisor = (float) $this->getSetting('early_score_divisor', 10000);
-        return round($earlyPremium / $divisor, 2);
+        $pointPer10000 = (float) $this->getSetting('early_score_per_10000', 0.5);
+        return round(($earlyPremium / 10000) * $pointPer10000, 2);
     }
 
-    // 월납점 계산
+    // 월납점 계산 (1만원당 0.5점)
     public function calculateMonthlyScore(float $monthlyPremium): float {
-        $divisor = (float) $this->getSetting('monthly_score_divisor', 10000);
-        return round($monthlyPremium / $divisor, 2);
+        $pointPer10000 = (float) $this->getSetting('monthly_score_per_10000', 0.5);
+        return round(($monthlyPremium / 10000) * $pointPer10000, 2);
     }
 
-    // 건수점 계산
+    // 건수점 계산 (1건당 0.5점)
     public function calculateCountScore(int $count): float {
-        return (float) $count;
+        $pointPerCount = (float) $this->getSetting('count_score_per_count', 0.5);
+        return round($count * $pointPerCount, 2);
     }
 
-    // 3W점 계산
+    // 3W점 계산 (1주당 0.5점)
     public function calculateThreeWScore(int $weeks): float {
-        if ($weeks >= 10) {
-            return (float) $this->getSetting('three_w_10_score', 2.0);
-        } elseif ($weeks >= 5) {
-            return (float) $this->getSetting('three_w_5_score', 0.5);
-        } elseif ($weeks >= 2) {
-            return (float) $this->getSetting('three_w_2_score', 0.2);
+        $pointPerWeek = (float) $this->getSetting('three_w_score_per_week', 0.5);
+        return round($weeks * $pointPerWeek, 2);
+    }
+
+    // 성장점 계산 (10% 성장당 1점)
+    public function calculateGrowthScore(float $prevAvg, float $currentMonthly): float {
+        if ($prevAvg <= 0) {
+            return 0;
         }
-        return 0;
+        $growthPercent = (($currentMonthly - $prevAvg) / $prevAvg) * 100;
+        if ($growthPercent <= 0) {
+            return 0;
+        }
+        $pointPer10Percent = (float) $this->getSetting('growth_score_per_10percent', 1.0);
+        return round(($growthPercent / 10) * $pointPer10Percent, 2);
+    }
+
+    // 근태점 계산 (출근 5점, 만근 10점)
+    public function calculateAttendanceScore(string $status): float {
+        return match($status) {
+            'present' => (float) $this->getSetting('attendance_present_score', 10),
+            'partial' => (float) $this->getSetting('attendance_partial_score', 5),
+            default => 0
+        };
     }
 
     // 3W 주차 자동 계산 (월~일 기준, 주당 3건 이상이면 1주 달성, 연속 달성만 카운트)
@@ -152,18 +170,6 @@ class ScoreCalculator {
         return $data['current'];
     }
 
-    // 성장점 계산
-    public function calculateGrowthScore(float $currentAvg, float $prevQuarterAvg): float {
-        if ($prevQuarterAvg <= 0) {
-            return 0;
-        }
-
-        $growthRate = (($currentAvg - $prevQuarterAvg) / $prevQuarterAvg) * 100;
-        $rate = (float) $this->getSetting('growth_rate', 0.3);
-
-        return round(max(0, $growthRate * $rate), 2);
-    }
-
     // 분기 내 경과 월수 계산
     public function getElapsedMonthsInQuarter(int $quarterId): int {
         $quarter = $this->db->fetchOne("SELECT * FROM quarters WHERE id = ?", [$quarterId]);
@@ -207,19 +213,6 @@ class ScoreCalculator {
         return $totalMonthly / $elapsedMonths;
     }
 
-    // 근태점 계산
-    public function calculateAttendanceScore(int $attendanceDays): float {
-        $workingDays = (int) $this->getSetting('working_days_per_month', 22);
-        $fullScore = (float) $this->getSetting('attendance_full_score', 20);
-
-        if ($attendanceDays >= $workingDays) {
-            return $fullScore;
-        }
-
-        // 비율로 계산
-        return round(($attendanceDays / $workingDays) * $fullScore, 2);
-    }
-
     // 특정 설계사의 모든 점수 계산 및 업데이트
     public function calculateAndUpdate(int $agentId, int $quarterId): array {
         // 일일 실적 합계 조회
@@ -248,14 +241,14 @@ class ScoreCalculator {
         $threeWBest = $threeWData['best'];     // 역대 최대 연속 주차(역사)
         $attendanceCount = $cumulative['attendance_count'] ?? 0;
 
-        // 출근일수 계산 (attendance 테이블에서)
-        $attendanceResult = $this->db->fetchColumn("
-            SELECT COUNT(*) FROM attendance
-            WHERE agent_id = ? AND status = 'present'
-            AND attendance_date >= (SELECT start_date FROM quarters WHERE id = ?)
-            AND attendance_date <= (SELECT end_date FROM quarters WHERE id = ?)
-        ", [$agentId, $quarterId, $quarterId]);
-        $attendanceCount = (int) $attendanceResult;
+        // 근태 상태 조회 (월별 가장 최근 기록)
+        $attendanceRecord = $this->db->fetchOne("
+            SELECT status FROM attendance
+            WHERE agent_id = ? AND quarter_id = ?
+            ORDER BY attendance_date DESC
+            LIMIT 1
+        ", [$agentId, $quarterId]);
+        $attendanceStatus = $attendanceRecord['status'] ?? '';
 
         // 점수 계산
         $earlyScore = $this->calculateEarlyScore((float) $dailySum['early_cumulative']);
@@ -263,13 +256,14 @@ class ScoreCalculator {
         $countScore = $this->calculateCountScore((int) $dailySum['total_count']);
         $threeWScore = $this->calculateThreeWScore($threeWWeeks);
 
-        // 성장점: 경과 월수 기준 평균으로 계산
-        $currentMonthlyAvg = $this->getCurrentMonthlyAverage($agentId, $quarterId);
+        // 성장점: 직전분기 평균의 10% 성장당 1점
+        // 경과 월수에 따른 현재 분기 평균과 비교 (1월차: 1개월, 2월차: 2개월 평균, 3월차: 3개월 평균)
+        $currentAvg = $this->getCurrentMonthlyAverage($agentId, $quarterId);
         $growthScore = $this->calculateGrowthScore(
-            $currentMonthlyAvg,
-            (float) ($agent['prev_quarter_avg'] ?? 0)
+            (float) ($agent['prev_quarter_avg'] ?? 0),
+            $currentAvg
         );
-        $attendanceScore = $this->calculateAttendanceScore($attendanceCount);
+        $attendanceScore = $this->calculateAttendanceScore($attendanceStatus);
         $eventScore = (float) $dailySum['event_cumulative'];
 
         // 종합점수
@@ -343,6 +337,9 @@ class ScoreCalculator {
                 a.position,
                 a.join_date,
                 a.prev_quarter_avg,
+                a.best_monthly_premium,
+                a.best_monthly_count,
+                a.best_three_w,
                 t.name as team_name,
                 RANK() OVER (ORDER BY cp.{$orderBy} DESC) as `rank`
             FROM cumulative_performance cp
@@ -412,6 +409,9 @@ class ScoreCalculator {
                 a.position,
                 a.join_date,
                 a.prev_quarter_avg,
+                a.best_monthly_premium,
+                a.best_monthly_count,
+                a.best_three_w,
                 t.name as team_name,
                 COALESCE(SUM(dp.early_premium), 0) as early_cumulative,
                 COALESCE(SUM(dp.monthly_premium), 0) as monthly_cumulative,
@@ -424,7 +424,7 @@ class ScoreCalculator {
                 AND MONTH(dp.performance_date) = ?
                 AND YEAR(dp.performance_date) = ?
             WHERE a.is_active = 1
-            GROUP BY a.id, a.name, a.team_id, a.profile_image, a.position, a.join_date, a.prev_quarter_avg, t.name
+            GROUP BY a.id, a.name, a.team_id, a.profile_image, a.position, a.join_date, a.prev_quarter_avg, a.best_monthly_premium, a.best_monthly_count, a.best_three_w, t.name
         ", [$quarterId, $month, $year]);
 
         // 점수 계산
@@ -434,13 +434,50 @@ class ScoreCalculator {
             $row['count_score'] = $this->calculateCountScore((int) $row['total_count']);
             $row['event_score'] = (float) $row['event_cumulative'];
 
-            // 월별에서는 3W, 성장, 근태 점수는 0으로 표시 (분기 기준이므로)
-            $row['three_w_score'] = 0;
-            $row['growth_score'] = 0;
-            $row['attendance_score'] = 0;
+            // cumulative_performance에서 3W, 성장, 근태 점수 가져오기
+            $cpData = $this->db->fetchOne("
+                SELECT three_w_weeks, three_w_score, growth_score, attendance_score, event_score as cp_event_score
+                FROM cumulative_performance
+                WHERE agent_id = ? AND quarter_id = ?
+            ", [$row['agent_id'], $quarterId]);
 
-            // 종합점수 (월별은 조기+월납+건수+이벤트)
-            $row['total_score'] = $row['early_score'] + $row['monthly_score'] + $row['count_score'] + $row['event_score'];
+            $row['three_w_weeks'] = $cpData['three_w_weeks'] ?? 0;
+            $row['three_w_score'] = (float) ($cpData['three_w_score'] ?? 0);
+            $row['growth_score'] = (float) ($cpData['growth_score'] ?? 0);
+            $row['attendance_score'] = (float) ($cpData['attendance_score'] ?? 0);
+
+            // 이벤트 점수는 cumulative_performance 값 사용 (관리자가 설정한 값)
+            if ($cpData && (float)$cpData['cp_event_score'] > 0) {
+                $row['event_score'] = (float) $cpData['cp_event_score'];
+            }
+
+            // 성장률 계산
+            $prevAvg = (float) ($row['prev_quarter_avg'] ?? 0);
+            $currentMonthly = (float) ($row['monthly_cumulative'] ?? 0);
+            if ($prevAvg > 0) {
+                $row['growth_rate'] = round((($currentMonthly - $prevAvg) / $prevAvg) * 100, 1);
+            } else {
+                $row['growth_rate'] = 0;
+            }
+
+            // 근태상태 조회
+            $attendance = $this->db->fetchOne("
+                SELECT status FROM attendance
+                WHERE agent_id = ? AND quarter_id = ?
+                ORDER BY attendance_date DESC
+                LIMIT 1
+            ", [$row['agent_id'], $quarterId]);
+
+            $statusMap = [
+                'absent' => '미출근',
+                'partial' => '출근',
+                'present' => '만근'
+            ];
+            $row['attendance_status'] = $attendance ? ($statusMap[$attendance['status']] ?? '-') : '-';
+
+            // 종합점수 (모든 점수 합산)
+            $row['total_score'] = $row['early_score'] + $row['monthly_score'] + $row['count_score'] +
+                                  $row['three_w_score'] + $row['growth_score'] + $row['attendance_score'] + $row['event_score'];
         }
 
         // 정렬

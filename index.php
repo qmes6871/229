@@ -231,11 +231,51 @@
         </button>
     </div>
 
+    <!-- 설계사 상세 모달 -->
+    <div class="modal-overlay" id="agent-detail-modal" onclick="Dashboard.closeAgentDetailModal()">
+        <div class="modal" style="max-width: 400px;" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3 class="modal-title">설계사 정보</h3>
+                <button class="modal-close" onclick="Dashboard.closeAgentDetailModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <div id="agent-modal-profile" style="width: 80px; height: 80px; border-radius: 50%; overflow: hidden; margin: 0 auto 1rem; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center;">
+                        <span style="font-size: 2.5rem; color: var(--text-muted);">👤</span>
+                    </div>
+                    <div id="agent-modal-name" style="font-size: 1.25rem; font-weight: 700;"></div>
+                    <div id="agent-modal-team" style="color: var(--text-muted); font-size: 0.875rem;"></div>
+                </div>
+                <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
+                    <div class="stat-card" style="padding: 1rem;">
+                        <div class="stat-label" style="font-size: 0.75rem;">전분기 평균 월납</div>
+                        <div class="stat-value" id="agent-modal-prev-avg" style="font-size: 1rem;">0</div>
+                    </div>
+                    <div class="stat-card" style="padding: 1rem;">
+                        <div class="stat-label" style="font-size: 0.75rem;">역대 최고 월납</div>
+                        <div class="stat-value gold" id="agent-modal-best-premium" style="font-size: 1rem;">0</div>
+                    </div>
+                    <div class="stat-card" style="padding: 1rem;">
+                        <div class="stat-label" style="font-size: 0.75rem;">역대 최고 월 건수</div>
+                        <div class="stat-value gold" id="agent-modal-best-count" style="font-size: 1rem;">0</div>
+                    </div>
+                    <div class="stat-card" style="padding: 1rem;">
+                        <div class="stat-label" style="font-size: 0.75rem;">역대 최고 3W</div>
+                        <div class="stat-value gold" id="agent-modal-best-3w" style="font-size: 1rem;">0</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="Dashboard.closeAgentDetailModal()">닫기</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.875rem;">
         <p>© 2026 프라임에셋 299본부. All rights reserved.</p>
     </footer>
 
-    <script src="/229/assets/js/dashboard.js?v=26"></script>
+    <script src="/229/assets/js/dashboard.js?v=33"></script>
 </body>
 </html>

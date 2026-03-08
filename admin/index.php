@@ -121,6 +121,29 @@
                 </div>
             </div>
 
+            <!-- 분기 목표 점수 설정 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title">분기 목표 점수 설정</h3>
+                </div>
+                <div class="card-body">
+                    <div class="flex gap-3 items-end flex-wrap">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label">현재 분기</label>
+                            <select id="quarter-select" class="form-control" style="width: auto; min-width: 150px;"></select>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label">목표 점수</label>
+                            <input type="number" id="target-score" class="form-control" style="width: 120px;" min="0" step="10" placeholder="200">
+                        </div>
+                        <button class="btn btn-primary" onclick="Admin.saveTargetScore()">저장</button>
+                    </div>
+                    <p style="margin-top: 0.75rem; font-size: 0.875rem; color: var(--text-muted);">
+                        설정한 목표 점수를 달성한 설계사는 실시간 순위에서 "달성" 표시가 나타납니다.
+                    </p>
+                </div>
+            </div>
+
             <!-- 모달 콘텐츠 관리 -->
             <div class="card mb-4">
                 <div class="card-header">
@@ -172,7 +195,7 @@
         </main>
     </div>
 
-    <script src="/229/assets/js/admin.js?v=15"></script>
+    <script src="/229/assets/js/admin.js?v=16"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             Admin.checkAuth();

@@ -67,12 +67,13 @@ foreach ($rankings as &$rank) {
     $rank['total_score_formatted'] = number_format((float) $rank['total_score'], 1);
 }
 
-// 분기 정보
-$quarterInfo = $db->fetchOne("SELECT * FROM quarters WHERE id = ?", [$quarterId]);
+// 분기 정보 (target_score 포함)
+$quarterInfo = $db->fetchOne("SELECT *, COALESCE(target_score, 200) as target_score FROM quarters WHERE id = ?", [$quarterId]);
 
 successResponse([
     'rankings' => $rankings,
     'quarter' => $quarterInfo,
+    'target_score' => (int) ($quarterInfo['target_score'] ?? 200),
     'period' => $period,
     'month' => $month,
     'order_by' => $orderBy,

@@ -14,6 +14,7 @@ const Dashboard = {
     currentQuarterId: null,
     quarters: [],
     showScores: false,
+    rankingsData: [],
 
     init() {
         // 테마 초기화
@@ -399,66 +400,68 @@ const Dashboard = {
 
         for (const [key, category] of Object.entries(categories)) {
             const fame = data[key];
+            const isPending = !fame || fame.is_pending;
 
             if (fame) {
                 const profileImg = fame.profile_image
                     ? `<img src="/229/uploads/profiles/${fame.profile_image}" alt="${fame.name}">`
                     : `<span class="fame-profile-placeholder">👤</span>`;
 
-                let valueFormatted;
-                if (key === 'count') {
-                    valueFormatted = `${fame.value}건`;
-                } else if (key === 'event') {
-                    valueFormatted = `${this.formatNumber(fame.value, 1)}점`;
-                } else if (key === 'three_w') {
-                    valueFormatted = `${fame.value}주`;
-                } else if (key === 'total') {
-                    valueFormatted = `${this.formatNumber(fame.value, 1)}점`;
-                } else {
-                    valueFormatted = `${this.formatNumber(fame.value)}원`;
-                }
-
-                // 조기가동, 월납, 건수는 금액 먼저(크게) 점수 나중(작게) / 종합은 점수만
-                let scoreHtml = '';
-                if (key === 'total') {
-                    scoreHtml = `<div class="fame-score">${this.formatNumber(fame.score, 1)}점</div>`;
-                } else if (['early', 'monthly', 'count'].includes(key)) {
-                    scoreHtml = `
-                        <div class="fame-score">${valueFormatted}</div>
-                        <div class="fame-value">${this.formatNumber(fame.score, 1)}점</div>
+                if (isPending) {
+                    // 달성예정 - 랜덤 설계사 표시
+                    html += `
+                        <div class="fame-card fame-card-pending">
+                            <div class="fame-category">${category.icon} ${category.label}</div>
+                            <div class="fame-profile">${profileImg}</div>
+                            <div class="fame-card-content">
+                                <div class="fame-name">${fame.name}</div>
+                                <div class="fame-team">${fame.team_name || fame.position || ''}</div>
+                                <div class="fame-score pending-badge">달성예정</div>
+                            </div>
+                        </div>
                     `;
                 } else {
-                    scoreHtml = `
-                        <div class="fame-score">${this.formatNumber(fame.score, 1)}점</div>
-                        <div class="fame-value">${valueFormatted}</div>
+                    // 실제 MVP
+                    let valueFormatted;
+                    if (key === 'count') {
+                        valueFormatted = `${fame.value}건`;
+                    } else if (key === 'event') {
+                        valueFormatted = `${this.formatNumber(fame.value, 1)}점`;
+                    } else if (key === 'three_w') {
+                        valueFormatted = `${fame.value}주`;
+                    } else if (key === 'total') {
+                        valueFormatted = `${this.formatNumber(fame.value, 1)}점`;
+                    } else {
+                        valueFormatted = `${this.formatNumber(fame.value)}원`;
+                    }
+
+                    let scoreHtml = '';
+                    if (key === 'total') {
+                        scoreHtml = `<div class="fame-score">${this.formatNumber(fame.score, 1)}점</div>`;
+                    } else if (['early', 'monthly', 'count'].includes(key)) {
+                        scoreHtml = `
+                            <div class="fame-score">${valueFormatted}</div>
+                            <div class="fame-value">${this.formatNumber(fame.score, 1)}점</div>
+                        `;
+                    } else {
+                        scoreHtml = `
+                            <div class="fame-score">${this.formatNumber(fame.score, 1)}점</div>
+                            <div class="fame-value">${valueFormatted}</div>
+                        `;
+                    }
+
+                    html += `
+                        <div class="fame-card">
+                            <div class="fame-category">${category.icon} ${category.label}</div>
+                            <div class="fame-profile">${profileImg}</div>
+                            <div class="fame-card-content">
+                                <div class="fame-name">${fame.name}</div>
+                                <div class="fame-team">${fame.team_name || fame.position || ''}</div>
+                                ${scoreHtml}
+                            </div>
+                        </div>
                     `;
                 }
-
-                html += `
-                    <div class="fame-card">
-                        <div class="fame-category">${category.icon} ${category.label}</div>
-                        <div class="fame-profile">${profileImg}</div>
-                        <div class="fame-card-content">
-                            <div class="fame-name">${fame.name}</div>
-                            <div class="fame-team">${fame.team_name || fame.position || ''}</div>
-                            ${scoreHtml}
-                        </div>
-                    </div>
-                `;
-            } else {
-                html += `
-                    <div class="fame-card">
-                        <div class="fame-category">${category.icon} ${category.label}</div>
-                        <div class="fame-profile">
-                            <span class="fame-profile-placeholder">-</span>
-                        </div>
-                        <div class="fame-card-content">
-                            <div class="fame-name">-</div>
-                            <div class="fame-team">데이터 없음</div>
-                            <div class="fame-score">-</div>
-                        </div>
-                    </div>
-                `;
             }
         }
 
@@ -485,6 +488,7 @@ const Dashboard = {
         const result = await this.fetchAPI(url);
 
         if (result.success && result.data.rankings) {
+            this.targetScore = result.data.target_score || 200;
             this.renderRankings(result.data.rankings);
             this.updateTimestamp(result.data.updated_at);
             this.updateRankingTitle();
@@ -523,6 +527,9 @@ const Dashboard = {
         const tbody = document.getElementById('ranking-tbody');
         if (!tbody) return;
 
+        // 데이터 저장 (모달에서 사용)
+        this.rankingsData = rankings;
+
         if (rankings.length === 0) {
             tbody.innerHTML = `
                 <tr>
@@ -559,17 +566,28 @@ const Dashboard = {
             // 이벤트 점수
             const eventScore = parseFloat(rank.event_score) || 0;
 
+            // 목표 달성 여부
+            const totalScore = parseFloat(rank.total_score) || 0;
+            const isAchieved = totalScore >= this.targetScore;
+            const remainingScore = this.targetScore - totalScore;
+            let statusBadge = '';
+            if (isAchieved) {
+                statusBadge = '<span class="badge badge-gold" style="margin-left: 6px; font-size: 0.7rem;">달성</span>';
+            } else if (remainingScore > 0) {
+                statusBadge = `<span class="badge badge-remaining" style="margin-left: 6px; font-size: 0.7rem;">${this.formatNumber(remainingScore, 1)}점 남음</span>`;
+            }
+
             // 모바일용 세부 정보
             const detailsText = `조기 ${this.formatNumber(rank.early_score, 1)} · 월납 ${this.formatNumber(rank.monthly_score, 1)} · 건수 ${this.formatNumber(rank.count_score, 1)} · 3W ${this.formatNumber(rank.three_w_score, 1)} · 성장 ${this.formatNumber(rank.growth_score, 1)} · 이벤트 ${this.formatNumber(eventScore, 1)}`;
 
             html += `
-                <tr class="${rankClass}" data-details="${detailsText}">
+                <tr class="${rankClass}${isAchieved ? ' achieved' : ''}" data-details="${detailsText}" data-agent-index="${index}" onclick="Dashboard.showAgentDetailModal(Dashboard.rankingsData[${index}])" style="cursor: pointer;">
                     <td class="rank-cell">${rankIcon} ${rank.rank}</td>
                     <td>
                         <div class="agent-cell">
                             <div class="agent-profile">${profileImg}</div>
                             <div class="agent-info">
-                                <div class="agent-name">${rank.name}</div>
+                                <div class="agent-name">${rank.name}${statusBadge}</div>
                                 <div class="agent-team">${subInfo}</div>
                             </div>
                         </div>
@@ -853,6 +871,42 @@ const Dashboard = {
         } catch (error) {
             console.error('Image save error:', error);
             this.showToast('이미지 저장에 실패했습니다.', 'error');
+        }
+    },
+
+    // 설계사 상세 모달 열기
+    async showAgentDetailModal(agentData) {
+        const modal = document.getElementById('agent-detail-modal');
+        if (!modal) return;
+
+        // 프로필 이미지
+        const profileEl = document.getElementById('agent-modal-profile');
+        if (profileEl) {
+            if (agentData.profile_image) {
+                profileEl.innerHTML = `<img src="/229/uploads/profiles/${agentData.profile_image}" alt="${agentData.name}" style="width: 100%; height: 100%; object-fit: cover;">`;
+            } else {
+                profileEl.innerHTML = `<span style="font-size: 2.5rem; color: var(--text-muted);">👤</span>`;
+            }
+        }
+
+        // 이름, 팀
+        document.getElementById('agent-modal-name').textContent = agentData.name;
+        document.getElementById('agent-modal-team').textContent = agentData.team_name || agentData.position || '';
+
+        // 데이터 표시
+        document.getElementById('agent-modal-prev-avg').textContent = this.formatNumber(agentData.prev_quarter_avg || 0) + '원';
+        document.getElementById('agent-modal-best-premium').textContent = this.formatNumber(agentData.best_monthly_premium || 0) + '원';
+        document.getElementById('agent-modal-best-count').textContent = (agentData.best_monthly_count || 0) + '건';
+        document.getElementById('agent-modal-best-3w').textContent = (agentData.best_three_w || 0) + '주';
+
+        modal.classList.add('active');
+    },
+
+    // 설계사 상세 모달 닫기
+    closeAgentDetailModal() {
+        const modal = document.getElementById('agent-detail-modal');
+        if (modal) {
+            modal.classList.remove('active');
         }
     },
 
