@@ -60,7 +60,7 @@ class ScoreCalculator {
         return round($weeks * $pointPerWeek, 2);
     }
 
-    // 성장점 계산 (10% 성장당 1점)
+    // 성장점 계산 (10% 성장당 1점, 0.1점 미만은 0으로 처리)
     public function calculateGrowthScore(float $prevAvg, float $currentMonthly): float {
         if ($prevAvg <= 0) {
             return 0;
@@ -70,7 +70,9 @@ class ScoreCalculator {
             return 0;
         }
         $pointPer10Percent = (float) $this->getSetting('growth_score_per_10percent', 1.0);
-        return round(($growthPercent / 10) * $pointPer10Percent, 2);
+        $score = round(($growthPercent / 10) * $pointPer10Percent, 2);
+        // 0.1점 미만은 0으로 처리
+        return $score >= 0.1 ? $score : 0;
     }
 
     // 근태점 계산 (출근 5점, 만근 10점)
@@ -355,12 +357,13 @@ class ScoreCalculator {
 
         // 각 설계사의 추가 정보 계산
         foreach ($results as &$row) {
-            // 성장률 계산 (경과 월수 기준 평균)
+            // 성장률 계산 (경과 월수 기준 평균, 0 미만은 0으로 표시)
             $prevAvg = (float) ($row['prev_quarter_avg'] ?? 0);
             $currentMonthly = (float) ($row['monthly_cumulative'] ?? 0);
             $currentAvg = $currentMonthly / $elapsedMonths;
             if ($prevAvg > 0) {
-                $row['growth_rate'] = round((($currentAvg - $prevAvg) / $prevAvg) * 100, 1);
+                $growthRate = round((($currentAvg - $prevAvg) / $prevAvg) * 100, 1);
+                $row['growth_rate'] = $growthRate >= 0.1 ? $growthRate : 0;
             } else {
                 $row['growth_rate'] = 0;
             }
@@ -451,11 +454,12 @@ class ScoreCalculator {
                 $row['event_score'] = (float) $cpData['cp_event_score'];
             }
 
-            // 성장률 계산
+            // 성장률 계산 (0 미만은 0으로 표시)
             $prevAvg = (float) ($row['prev_quarter_avg'] ?? 0);
             $currentMonthly = (float) ($row['monthly_cumulative'] ?? 0);
             if ($prevAvg > 0) {
-                $row['growth_rate'] = round((($currentMonthly - $prevAvg) / $prevAvg) * 100, 1);
+                $growthRate = round((($currentMonthly - $prevAvg) / $prevAvg) * 100, 1);
+                $row['growth_rate'] = $growthRate >= 0.1 ? $growthRate : 0;
             } else {
                 $row['growth_rate'] = 0;
             }
