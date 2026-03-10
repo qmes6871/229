@@ -62,7 +62,14 @@ const Admin = {
 
             const text = await response.text();
             try {
-                return JSON.parse(text);
+                const result = JSON.parse(text);
+                // 토큰 만료 시 로그인 페이지로 이동
+                if (response.status === 401) {
+                    this.showToast('세션이 만료되었습니다. 다시 로그인해주세요.', 'error');
+                    setTimeout(() => this.logout(), 1500);
+                    return result;
+                }
+                return result;
             } catch (parseError) {
                 console.error('JSON Parse Error:', parseError, 'Response:', text);
                 return { success: false, message: '서버 응답 오류' };
@@ -175,18 +182,15 @@ const Admin = {
         });
     },
 
-    // 모달 오버레이 클릭 시 닫기 바인딩
+    // ESC 키로 모달 닫기 바인딩
     bindModalOverlayClose() {
-        document.querySelectorAll('.modal-overlay').forEach(overlay => {
-            if (overlay.dataset.overlayBound) return;
-            overlay.dataset.overlayBound = 'true';
+        if (this.escKeyBound) return;
+        this.escKeyBound = true;
 
-            overlay.addEventListener('click', (e) => {
-                // 오버레이 자체를 클릭했을 때만 닫기 (모달 내부 클릭 시 무시)
-                if (e.target === overlay) {
-                    overlay.classList.remove('active');
-                }
-            });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.closeModal();
+            }
         });
     },
 
@@ -890,8 +894,9 @@ const Admin = {
         const tbody = document.getElementById('performance-tbody');
         if (!tbody) return;
 
-        // 팀 필터 값 가져오기
+        // 필터 값 가져오기
         const teamFilter = document.getElementById('filter-perf-team')?.value || '';
+        const agentSearch = document.getElementById('filter-perf-agent')?.value?.trim().toLowerCase() || '';
 
         // 활성 설계사 목록 필터링
         let activeAgents = this.agents.filter(a => a.is_active == 1);
@@ -899,6 +904,11 @@ const Admin = {
         // 팀 필터 적용
         if (teamFilter) {
             activeAgents = activeAgents.filter(a => a.team_id == teamFilter);
+        }
+
+        // 설계사 이름 검색 필터 적용
+        if (agentSearch) {
+            activeAgents = activeAgents.filter(a => a.name.toLowerCase().includes(agentSearch));
         }
 
         // 가나다순 정렬
@@ -1050,6 +1060,12 @@ const Admin = {
 
         // 팀 필터 변경 시 목록 다시 렌더링
         document.getElementById('filter-perf-team')?.addEventListener('change', () => {
+            const date = document.getElementById('filter-date')?.value || '';
+            this.renderInlinePerformance(date);
+        });
+
+        // 설계사 검색 입력 시 목록 다시 렌더링
+        document.getElementById('filter-perf-agent')?.addEventListener('input', () => {
             const date = document.getElementById('filter-date')?.value || '';
             this.renderInlinePerformance(date);
         });

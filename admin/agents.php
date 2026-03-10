@@ -100,9 +100,9 @@
                             <option value="">전체 팀</option>
                         </select>
                         <select id="filter-status" class="form-control" style="max-width: 150px;">
+                            <option value="">전체</option>
                             <option value="1">활성</option>
                             <option value="0">비활성</option>
-                            <option value="">전체</option>
                         </select>
                         <button class="btn btn-secondary" id="btn-search">검색</button>
                     </div>
@@ -204,7 +204,7 @@
 
                     <div class="form-group">
                         <label class="form-label" for="agent-best-count">역대 최고 월 건수</label>
-                        <input type="number" id="agent-best-count" class="form-control" value="0" min="0" placeholder="기네스 기록용">
+                        <input type="text" id="agent-best-count" class="form-control" value="" placeholder="기네스 기록용" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                     </div>
 
                     <div class="form-group">

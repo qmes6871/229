@@ -67,28 +67,6 @@
                 <h1>실적 입력</h1>
             </div>
 
-            <!-- 필터 -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <div class="flex gap-2 flex-wrap items-center">
-                        <input
-                            type="date"
-                            id="filter-date"
-                            class="form-control"
-                            style="max-width: 200px;"
-                        >
-                        <select id="filter-perf-team" class="form-control" style="max-width: 180px;">
-                            <option value="">전체 팀</option>
-                        </select>
-                        <button class="btn btn-secondary" id="btn-filter">조회</button>
-                        <button class="btn btn-secondary" id="btn-today">오늘</button>
-                        <div style="margin-left: auto; font-size: 0.875rem; color: var(--text-muted);">
-                            <span style="color: var(--gold);">*</span> 1~7일 입력분은 조기가동으로 자동 분류됩니다.
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- 실적 요약 -->
             <div class="stats-grid mb-4">
                 <div class="stat-card">
@@ -106,6 +84,35 @@
                 <div class="stat-card">
                     <div class="stat-label">계약건수 합계</div>
                     <div class="stat-value" id="summary-contracts">0</div>
+                </div>
+            </div>
+
+            <!-- 필터 -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="flex gap-2 flex-wrap items-center">
+                        <input
+                            type="date"
+                            id="filter-date"
+                            class="form-control"
+                            style="max-width: 200px;"
+                        >
+                        <select id="filter-perf-team" class="form-control" style="max-width: 180px;">
+                            <option value="">전체 팀</option>
+                        </select>
+                        <input
+                            type="text"
+                            id="filter-perf-agent"
+                            class="form-control"
+                            placeholder="설계사 검색"
+                            style="max-width: 150px;"
+                        >
+                        <button class="btn btn-secondary" id="btn-filter">조회</button>
+                        <button class="btn btn-secondary" id="btn-today">오늘</button>
+                        <div style="margin-left: auto; font-size: 0.875rem; color: var(--text-muted);">
+                            <span style="color: var(--gold);">*</span> 1~7일 입력분은 조기가동으로 자동 분류됩니다.
+                        </div>
+                    </div>
                 </div>
             </div>
 

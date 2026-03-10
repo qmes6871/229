@@ -325,8 +325,8 @@ const Dashboard = {
         const displayContent = content || '등록된 내용이 없습니다.';
 
         const html = `
-            <div class="modal-overlay active" id="content-modal" onclick="Dashboard.closeContentModal()">
-                <div class="modal" style="max-width: 600px;" onclick="event.stopPropagation()">
+            <div class="modal-overlay active" id="content-modal">
+                <div class="modal" style="max-width: 600px;">
                     <div class="modal-header">
                         <h3 class="modal-title">${title}</h3>
                         <button class="modal-close" onclick="Dashboard.closeContentModal()">&times;</button>
@@ -709,6 +709,13 @@ const Dashboard = {
 
     // 이벤트 바인딩
     bindEvents() {
+        // ESC 키로 모달 닫기
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.closeAllModals();
+            }
+        });
+
         // 연도 선택
         const yearSelect = document.getElementById('year-select');
         if (yearSelect) {
@@ -908,6 +915,13 @@ const Dashboard = {
         if (modal) {
             modal.classList.remove('active');
         }
+    },
+
+    // 모든 모달 닫기
+    closeAllModals() {
+        this.closeRecordsModal();
+        this.closeContentModal();
+        this.closeAgentDetailModal();
     },
 
     // 토스트 메시지

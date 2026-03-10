@@ -232,8 +232,8 @@
     </div>
 
     <!-- 설계사 상세 모달 -->
-    <div class="modal-overlay" id="agent-detail-modal" onclick="Dashboard.closeAgentDetailModal()">
-        <div class="modal" style="max-width: 400px;" onclick="event.stopPropagation()">
+    <div class="modal-overlay" id="agent-detail-modal">
+        <div class="modal" style="max-width: 400px;">
             <div class="modal-header">
                 <h3 class="modal-title">설계사 정보</h3>
                 <button class="modal-close" onclick="Dashboard.closeAgentDetailModal()">&times;</button>
