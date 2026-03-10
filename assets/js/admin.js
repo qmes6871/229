@@ -3,7 +3,7 @@
  */
 
 const Admin = {
-    apiBase: '/229/api',
+    apiBase: '/api',
     token: null,
     user: null,
     agents: [],
@@ -16,7 +16,7 @@ const Admin = {
         const userJson = localStorage.getItem('user');
 
         if (!this.token) {
-            window.location.href = '/229/admin/login.php';
+            window.location.href = '/admin/login.php';
             return false;
         }
 
@@ -45,7 +45,7 @@ const Admin = {
         localStorage.removeItem('auth_token');
         localStorage.removeItem('user');
         document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
-        window.location.href = '/229/admin/login.php';
+        window.location.href = '/admin/login.php';
     },
 
     // API 호출
@@ -410,7 +410,7 @@ const Admin = {
                         <div class="agent-cell">
                             <div class="agent-profile">
                                 ${agent.profile_image
-                                    ? `<img src="/229/uploads/profiles/${agent.profile_image}" alt="${agent.name}">`
+                                    ? `<img src="/uploads/profiles/${agent.profile_image}" alt="${agent.name}">`
                                     : '<span class="agent-profile-placeholder">👤</span>'}
                             </div>
                             <div class="agent-name">${agent.name}</div>
@@ -567,7 +567,7 @@ const Admin = {
         // 이미지 미리보기
         const preview = document.getElementById('agent-image-preview');
         if (agent.profile_image) {
-            preview.innerHTML = `<img src="/229/uploads/profiles/${agent.profile_image}" style="width: 100%; height: 100%; object-fit: cover;">`;
+            preview.innerHTML = `<img src="/uploads/profiles/${agent.profile_image}" style="width: 100%; height: 100%; object-fit: cover;">`;
         } else {
             this.resetImagePreview();
         }
@@ -949,7 +949,7 @@ const Admin = {
                         <div class="agent-cell">
                             <div class="agent-profile">
                                 ${agent.profile_image
-                                    ? `<img src="/229/uploads/profiles/${agent.profile_image}" alt="${agent.name}">`
+                                    ? `<img src="/uploads/profiles/${agent.profile_image}" alt="${agent.name}">`
                                     : '<span class="agent-profile-placeholder">👤</span>'}
                             </div>
                             <div>
@@ -1131,7 +1131,7 @@ const Admin = {
             // 프로필 이미지
             const profileEl = document.getElementById('detail-agent-profile');
             if (agent.profile_image) {
-                profileEl.innerHTML = `<img src="/229/uploads/profiles/${agent.profile_image}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                profileEl.innerHTML = `<img src="/uploads/profiles/${agent.profile_image}" style="width: 100%; height: 100%; object-fit: cover;">`;
             } else {
                 profileEl.innerHTML = '<span class="agent-profile-placeholder">👤</span>';
             }
@@ -1427,7 +1427,7 @@ const Admin = {
             this.attendanceData[agent.id] = status;
 
             const profileImg = agent.profile_image
-                ? `<img src="/229/uploads/profiles/${agent.profile_image}" alt="${agent.name}" style="width: 100%; height: 100%; object-fit: cover;">`
+                ? `<img src="/uploads/profiles/${agent.profile_image}" alt="${agent.name}" style="width: 100%; height: 100%; object-fit: cover;">`
                 : '<span style="color: var(--text-muted); font-size: 1.5rem;">👤</span>';
 
             html += `
@@ -1490,7 +1490,7 @@ const Admin = {
                         <div class="agent-cell">
                             <div class="agent-profile">
                                 ${agent.profile_image
-                                    ? `<img src="/229/uploads/profiles/${agent.profile_image}" alt="${agent.name}">`
+                                    ? `<img src="/uploads/profiles/${agent.profile_image}" alt="${agent.name}">`
                                     : '<span class="agent-profile-placeholder">👤</span>'}
                             </div>
                             <div class="agent-info">

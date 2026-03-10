@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>관리자 대시보드 | 299본부</title>
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/229/assets/css/app.css?v=17">
+    <link rel="stylesheet" href="/assets/css/app.css?v=17">
 </head>
 <body>
     <div class="admin-layout">
@@ -16,7 +16,7 @@
                 <div class="logo-subtitle">관리자 시스템</div>
             </div>
             <nav class="sidebar-nav">
-                <a href="/229/admin/index.php" class="nav-item active">
+                <a href="/admin/index.php" class="nav-item active">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="3" y="3" width="7" height="7"></rect>
                         <rect x="14" y="3" width="7" height="7"></rect>
@@ -25,7 +25,7 @@
                     </svg>
                     대시보드
                 </a>
-                <a href="/229/admin/agents.php" class="nav-item">
+                <a href="/admin/agents.php" class="nav-item">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                         <circle cx="9" cy="7" r="4"></circle>
@@ -34,7 +34,7 @@
                     </svg>
                     설계사 관리
                 </a>
-                <a href="/229/admin/performance.php" class="nav-item">
+                <a href="/admin/performance.php" class="nav-item">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="12" y1="20" x2="12" y2="10"></line>
                         <line x1="18" y1="20" x2="18" y2="4"></line>
@@ -42,7 +42,7 @@
                     </svg>
                     실적 입력
                 </a>
-                <a href="/229/" class="nav-item" target="_blank">
+                <a href="/" class="nav-item" target="_blank">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                         <polyline points="15 3 21 3 21 9"></polyline>
@@ -95,7 +95,7 @@
                 </div>
                 <div class="card-body">
                     <div class="flex gap-2 flex-wrap">
-                        <a href="/229/admin/agents.php" class="btn btn-primary">
+                        <a href="/admin/agents.php" class="btn btn-primary">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                                 <circle cx="8.5" cy="7" r="4"></circle>
@@ -104,14 +104,14 @@
                             </svg>
                             설계사 등록
                         </a>
-                        <a href="/229/admin/performance.php" class="btn btn-primary">
+                        <a href="/admin/performance.php" class="btn btn-primary">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <line x1="12" y1="5" x2="12" y2="19"></line>
                                 <line x1="5" y1="12" x2="19" y2="12"></line>
                             </svg>
                             실적 입력
                         </a>
-                        <a href="/229/" target="_blank" class="btn btn-secondary">
+                        <a href="/" target="_blank" class="btn btn-secondary">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
                             </svg>
@@ -169,7 +169,7 @@
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">최근 실적 입력</h3>
-                    <a href="/229/admin/performance.php" class="btn btn-secondary btn-sm">전체보기</a>
+                    <a href="/admin/performance.php" class="btn btn-secondary btn-sm">전체보기</a>
                 </div>
                 <div class="card-body">
                     <div class="ranking-table-wrapper">
@@ -195,7 +195,7 @@
         </main>
     </div>
 
-    <script src="/229/assets/js/admin.js?v=16"></script>
+    <script src="/assets/js/admin.js?v=16"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             Admin.checkAuth();

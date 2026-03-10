@@ -6,7 +6,7 @@
     <title>299본부 성과관리 | 실시간 업적판</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/229/assets/css/app.css?v=22">
+    <link rel="stylesheet" href="/assets/css/app.css?v=22">
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 </head>
 <body>
@@ -47,7 +47,7 @@
                         </svg>
                         <span class="btn-text">이미지 저장</span>
                     </button>
-                    <a href="/229/admin/login.php" class="btn btn-secondary btn-sm" title="관리자">
+                    <a href="/admin/login.php" class="btn btn-secondary btn-sm" title="관리자">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                             <circle cx="12" cy="7" r="4"></circle>
@@ -276,6 +276,6 @@
         <p>© 2026 프라임에셋 299본부. All rights reserved.</p>
     </footer>
 
-    <script src="/229/assets/js/dashboard.js?v=33"></script>
+    <script src="/assets/js/dashboard.js?v=33"></script>
 </body>
 </html>

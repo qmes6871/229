@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>실적 입력 | 299본부</title>
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/229/assets/css/app.css?v=8">
+    <link rel="stylesheet" href="/assets/css/app.css?v=8">
 </head>
 <body>
     <div class="admin-layout">
@@ -16,7 +16,7 @@
                 <div class="logo-subtitle">관리자 시스템</div>
             </div>
             <nav class="sidebar-nav">
-                <a href="/229/admin/index.php" class="nav-item">
+                <a href="/admin/index.php" class="nav-item">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="3" y="3" width="7" height="7"></rect>
                         <rect x="14" y="3" width="7" height="7"></rect>
@@ -25,7 +25,7 @@
                     </svg>
                     대시보드
                 </a>
-                <a href="/229/admin/agents.php" class="nav-item">
+                <a href="/admin/agents.php" class="nav-item">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                         <circle cx="9" cy="7" r="4"></circle>
@@ -34,7 +34,7 @@
                     </svg>
                     설계사 관리
                 </a>
-                <a href="/229/admin/performance.php" class="nav-item active">
+                <a href="/admin/performance.php" class="nav-item active">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="12" y1="20" x2="12" y2="10"></line>
                         <line x1="18" y1="20" x2="18" y2="4"></line>
@@ -42,7 +42,7 @@
                     </svg>
                     실적 입력
                 </a>
-                <a href="/229/" class="nav-item" target="_blank">
+                <a href="/" class="nav-item" target="_blank">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
                         <polyline points="15 3 21 3 21 9"></polyline>
@@ -325,7 +325,7 @@
         </div>
     </div>
 
-    <script src="/229/assets/js/admin.js?v=14"></script>
+    <script src="/assets/js/admin.js?v=14"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             Admin.checkAuth();

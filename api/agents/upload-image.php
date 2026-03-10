@@ -87,5 +87,5 @@ $db->update('agents', ['profile_image' => $filename], 'id = ?', [$agentId]);
 
 successResponse([
     'filename' => $filename,
-    'url' => '/229/uploads/profiles/' . $filename
+    'url' => '/uploads/profiles/' . $filename
 ], '이미지가 업로드되었습니다.');

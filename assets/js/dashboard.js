@@ -5,7 +5,7 @@
 const Dashboard = {
     refreshInterval: 5000,
     refreshTimer: null,
-    apiBase: '/229/api',
+    apiBase: '/api',
     currentPeriod: 'month',
     currentMonth: new Date().getMonth() + 1,
     currentSort: 'total_score',
@@ -206,7 +206,7 @@ const Dashboard = {
                 const hasPhoto = !!record.profile_image;
                 const cardClass = hasPhoto ? 'guinness-card guinness-card-premium' : 'guinness-card';
                 const profileImg = hasPhoto
-                    ? `<img src="/229/uploads/profiles/${record.profile_image}" alt="${record.name}">`
+                    ? `<img src="/uploads/profiles/${record.profile_image}" alt="${record.name}">`
                     : `<span class="guinness-profile-placeholder">👤</span>`;
 
                 html += `
@@ -271,7 +271,7 @@ const Dashboard = {
         } else {
             records.forEach((record, index) => {
                 const profileImg = record.profile_image
-                    ? `<img src="/229/uploads/profiles/${record.profile_image}" alt="${record.name}">`
+                    ? `<img src="/uploads/profiles/${record.profile_image}" alt="${record.name}">`
                     : `<span style="color: var(--text-muted);">👤</span>`;
 
                 html += `
@@ -404,7 +404,7 @@ const Dashboard = {
 
             if (fame) {
                 const profileImg = fame.profile_image
-                    ? `<img src="/229/uploads/profiles/${fame.profile_image}" alt="${fame.name}">`
+                    ? `<img src="/uploads/profiles/${fame.profile_image}" alt="${fame.name}">`
                     : `<span class="fame-profile-placeholder">👤</span>`;
 
                 if (isPending) {
@@ -548,7 +548,7 @@ const Dashboard = {
             const rankIcon = rank.rank === 1 ? '🥇' : rank.rank === 2 ? '🥈' : rank.rank === 3 ? '🥉' : '';
 
             const profileImg = rank.profile_image
-                ? `<img src="/229/uploads/profiles/${rank.profile_image}" alt="${rank.name}">`
+                ? `<img src="/uploads/profiles/${rank.profile_image}" alt="${rank.name}">`
                 : `<span class="agent-profile-placeholder">👤</span>`;
 
             // 성장률 색상 결정 (양수: 빨강, 음수: 파랑)
@@ -890,7 +890,7 @@ const Dashboard = {
         const profileEl = document.getElementById('agent-modal-profile');
         if (profileEl) {
             if (agentData.profile_image) {
-                profileEl.innerHTML = `<img src="/229/uploads/profiles/${agentData.profile_image}" alt="${agentData.name}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                profileEl.innerHTML = `<img src="/uploads/profiles/${agentData.profile_image}" alt="${agentData.name}" style="width: 100%; height: 100%; object-fit: cover;">`;
             } else {
                 profileEl.innerHTML = `<span style="font-size: 2.5rem; color: var(--text-muted);">👤</span>`;
             }

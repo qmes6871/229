@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>관리자 로그인 | 299본부</title>
     <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="/229/assets/css/app.css?v=8">
+    <link rel="stylesheet" href="/assets/css/app.css?v=8">
     <style>
         .login-container {
             min-height: 100vh;
@@ -94,7 +94,7 @@
                     </form>
 
                     <div style="text-align: center; margin-top: 1.5rem;">
-                        <a href="/229/" style="color: var(--text-muted); font-size: 0.875rem; text-decoration: none;">
+                        <a href="/" style="color: var(--text-muted); font-size: 0.875rem; text-decoration: none;">
                             ← 대시보드로 돌아가기
                         </a>
                     </div>
@@ -117,7 +117,7 @@
             errorDiv.classList.remove('show');
 
             try {
-                const response = await fetch('/229/api/auth/login.php', {
+                const response = await fetch('/api/auth/login.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
@@ -134,7 +134,7 @@
                     document.cookie = `auth_token=${result.data.token}; path=/; max-age=86400`;
 
                     // 관리자 페이지로 이동
-                    window.location.href = '/229/admin/index.php';
+                    window.location.href = '/admin/index.php';
                 } else {
                     errorDiv.textContent = result.message;
                     errorDiv.classList.add('show');
@@ -151,13 +151,13 @@
         // 이미 로그인되어 있으면 리다이렉트
         const token = localStorage.getItem('auth_token');
         if (token) {
-            fetch('/229/api/auth/verify.php', {
+            fetch('/api/auth/verify.php', {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
             .then(res => res.json())
             .then(result => {
                 if (result.success) {
-                    window.location.href = '/229/admin/index.php';
+                    window.location.href = '/admin/index.php';
                 }
             });
         }
