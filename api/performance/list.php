@@ -123,15 +123,21 @@ if ($date) {
 
 // 설계사별 3W 주차 (분기 기준)
 $agentThreeW = [];
+// 설계사별 분기 누적 실적
+$agentQuarterStats = [];
 if ($quarterId) {
-    $threeWStats = $db->fetchAll("
-        SELECT agent_id, three_w_weeks
+    $quarterStats = $db->fetchAll("
+        SELECT agent_id, three_w_weeks, monthly_cumulative, total_count
         FROM cumulative_performance
         WHERE quarter_id = ?
     ", [$quarterId]);
 
-    foreach ($threeWStats as $stat) {
+    foreach ($quarterStats as $stat) {
         $agentThreeW[$stat['agent_id']] = $stat['three_w_weeks'];
+        $agentQuarterStats[$stat['agent_id']] = [
+            'monthly_cumulative' => $stat['monthly_cumulative'],
+            'total_count' => $stat['total_count']
+        ];
     }
 }
 
@@ -141,5 +147,6 @@ successResponse([
     'monthly_totals' => $monthlyTotals,
     'agent_monthly_stats' => $agentMonthlyStats,
     'agent_three_w' => $agentThreeW,
+    'agent_quarter_stats' => $agentQuarterStats,
     'count' => count($performances)
 ]);

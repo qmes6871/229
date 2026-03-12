@@ -109,6 +109,10 @@
                         >
                         <button class="btn btn-secondary" id="btn-filter">조회</button>
                         <button class="btn btn-secondary" id="btn-today">오늘</button>
+                        <label style="display: flex; align-items: center; gap: 0.25rem; margin-left: 1rem; cursor: pointer;">
+                            <input type="checkbox" id="filter-has-input" style="cursor: pointer;">
+                            <span style="font-size: 0.875rem;">입력된 설계사 우선</span>
+                        </label>
                         <div style="margin-left: auto; font-size: 0.875rem; color: var(--text-muted);">
                             <span style="color: var(--gold);">*</span> 1~7일 입력분은 조기가동으로 자동 분류됩니다.
                         </div>
@@ -283,7 +287,7 @@
                             </div>
                             <div class="form-group" style="margin-bottom: 0;">
                                 <label class="form-label">건수</label>
-                                <input type="number" id="detail-add-count" class="form-control" style="width: 80px;" value="0" min="0">
+                                <input type="text" id="detail-add-count" class="form-control" style="width: 80px;" value="" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                             </div>
                             <button class="btn btn-primary" id="btn-detail-add">추가</button>
                         </div>

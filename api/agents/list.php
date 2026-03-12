@@ -19,7 +19,7 @@ $db = new Database();
 
 // 파라미터
 $teamId = isset($_GET['team_id']) ? (int) $_GET['team_id'] : null;
-$isActive = isset($_GET['is_active']) ? (int) $_GET['is_active'] : 1;
+$isActive = isset($_GET['is_active']) && $_GET['is_active'] !== '' ? (int) $_GET['is_active'] : null;
 $search = isset($_GET['search']) ? trim($_GET['search']) : '';
 
 // 쿼리 빌드

@@ -551,17 +551,14 @@ const Dashboard = {
                 ? `<img src="/uploads/profiles/${rank.profile_image}" alt="${rank.name}">`
                 : `<span class="agent-profile-placeholder">👤</span>`;
 
-            // 성장률 색상 결정 (양수: 빨강, 음수: 파랑)
-            const growthScore = parseFloat(rank.growth_score) || 0;
-            const growthClass = growthScore > 0 ? 'growth-positive' : growthScore < 0 ? 'growth-negative' : '';
-
             // N년차 계산
             const yearsOfService = this.calculateYearsOfService(rank.join_date);
             const teamInfo = rank.team_name || rank.position || '';
             const subInfo = yearsOfService ? `${teamInfo} ${yearsOfService}` : teamInfo;
 
-            // 3W 계산 (몇 주차인지)
-            const threeWWeeks = rank.three_w_weeks || '-';
+            // 3W 계산 (2주부터 표시)
+            const threeWWeeksRaw = parseInt(rank.three_w_weeks) || 0;
+            const threeWWeeks = threeWWeeksRaw >= 2 ? threeWWeeksRaw : '-';
 
             // 이벤트 점수
             const eventScore = parseFloat(rank.event_score) || 0;
@@ -578,7 +575,7 @@ const Dashboard = {
             }
 
             // 모바일용 세부 정보
-            const detailsText = `조기 ${this.formatNumber(rank.early_score, 1)} · 월납 ${this.formatNumber(rank.monthly_score, 1)} · 건수 ${this.formatNumber(rank.count_score, 1)} · 3W ${this.formatNumber(rank.three_w_score, 1)} · 성장 ${this.formatNumber(rank.growth_score, 1)} · 이벤트 ${this.formatNumber(eventScore, 1)}`;
+            const detailsText = `조기 ${this.formatNumber(rank.early_score, 1)} · 월납 ${this.formatNumber(rank.monthly_score, 1)} · 건수 ${this.formatNumber(rank.count_score, 1)} · 3W ${this.formatNumber(rank.three_w_score, 1)} · 이벤트 ${this.formatNumber(eventScore, 1)}`;
 
             html += `
                 <tr class="${rankClass}${isAchieved ? ' achieved' : ''}" data-details="${detailsText}" data-agent-index="${index}" onclick="Dashboard.showAgentDetailModal(Dashboard.rankingsData[${index}])" style="cursor: pointer;">
@@ -607,10 +604,6 @@ const Dashboard = {
                     <td class="score-cell-dual">
                         <div class="score-value">${threeWWeeks}주</div>
                         <div class="score-point">${this.formatNumber(rank.three_w_score, 1)}점</div>
-                    </td>
-                    <td class="score-cell-dual ${growthClass}">
-                        <div class="score-value">${this.formatNumber(rank.growth_rate, 1)}%</div>
-                        <div class="score-point">${this.formatNumber(rank.growth_score, 1)}점</div>
                     </td>
                     <td class="score-cell-dual">
                         <div class="score-value">${this.formatNumber(eventScore, 1)}</div>

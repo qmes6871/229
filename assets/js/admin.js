@@ -838,6 +838,7 @@ const Admin = {
     performanceData: [],
     agentMonthlyStats: {},
     agentThreeW: {},
+    agentQuarterStats: {},
 
     async loadPerformance() {
         // 설계사 목록 로드
@@ -884,6 +885,7 @@ const Admin = {
             this.performanceData = result.data.performances || [];
             this.agentMonthlyStats = result.data.agent_monthly_stats || {};
             this.agentThreeW = result.data.agent_three_w || {};
+            this.agentQuarterStats = result.data.agent_quarter_stats || {};
             this.renderInlinePerformance(date);
             this.updatePerformanceSummary(result.data);
         }
@@ -911,21 +913,37 @@ const Admin = {
             activeAgents = activeAgents.filter(a => a.name.toLowerCase().includes(agentSearch));
         }
 
-        // 가나다순 정렬
-        activeAgents.sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+        // 실적 데이터를 agent_id로 매핑 (정렬 전에 먼저 생성)
+        const perfMap = {};
+        this.performanceData.forEach(p => {
+            if (p.performance_date === date) {
+                perfMap[String(p.agent_id)] = p;
+            }
+        });
+
+        // 입력된 설계사 우선 필터 확인
+        const hasInputFirst = document.getElementById('filter-has-input')?.checked || false;
+
+        // 분기 누적 실적 데이터
+        const quarterStats = this.agentQuarterStats || {};
+
+        // 정렬: 입력된 설계사 우선 옵션이 켜져 있으면 분기 실적 있는 설계사 우선
+        activeAgents.sort((a, b) => {
+            if (hasInputFirst) {
+                const aStats = quarterStats[String(a.id)];
+                const bStats = quarterStats[String(b.id)];
+                const aHasPerf = aStats && (Number(aStats.monthly_cumulative) > 0 || Number(aStats.total_count) > 0);
+                const bHasPerf = bStats && (Number(bStats.monthly_cumulative) > 0 || Number(bStats.total_count) > 0);
+                if (aHasPerf && !bHasPerf) return -1;
+                if (!aHasPerf && bHasPerf) return 1;
+            }
+            return a.name.localeCompare(b.name, 'ko');
+        });
 
         if (activeAgents.length === 0) {
             tbody.innerHTML = '<tr><td colspan="9" class="empty-state">활성화된 설계사가 없습니다.</td></tr>';
             return;
         }
-
-        // 실적 데이터를 agent_id로 매핑
-        const perfMap = {};
-        this.performanceData.forEach(p => {
-            if (p.performance_date === date) {
-                perfMap[p.agent_id] = p;
-            }
-        });
 
         let html = '';
         activeAgents.forEach(agent => {
@@ -1066,6 +1084,12 @@ const Admin = {
 
         // 설계사 검색 입력 시 목록 다시 렌더링
         document.getElementById('filter-perf-agent')?.addEventListener('input', () => {
+            const date = document.getElementById('filter-date')?.value || '';
+            this.renderInlinePerformance(date);
+        });
+
+        // 입력된 설계사 우선 체크박스 변경 시 목록 다시 렌더링
+        document.getElementById('filter-has-input')?.addEventListener('change', () => {
             const date = document.getElementById('filter-date')?.value || '';
             this.renderInlinePerformance(date);
         });
