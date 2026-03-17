@@ -23,3 +23,9 @@ uploads/profiles/*
 vendor/
 node_modules/
 node/
+node_modules/
+.next/
+.env
+.env.*
+dist/
+build/
